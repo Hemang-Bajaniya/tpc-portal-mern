@@ -14,6 +14,8 @@ app.get('/', (req, res) => {
     res.send('Hello TPC!');
 });
 
+app.get("/hello", (_, res) => res.send("Hello Endpoint"));
+
 app.listen(PORT, () => {
     console.log(`Example app listening on port ${PORT}`);
 });
