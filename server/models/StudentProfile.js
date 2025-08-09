@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 
 const studentSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  college_id: String,
   f_name: String,
   l_name: String,
   m_name: String,
