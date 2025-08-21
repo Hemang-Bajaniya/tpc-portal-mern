@@ -1,6 +1,7 @@
 // complete 
 import { Schema, model } from 'mongoose';
 import Company from './Company';
+import Department from './Department';
 
 const CompanyJobProfile = new Schema({
   company_id: { type: Number, ref: 'Company', required: true },
@@ -24,6 +25,7 @@ const CompanyJobProfile = new Schema({
   vacancies: Number,
   bond_details: String,
   skills_required: [String],
+  for_dept: [{type: String, ref: Department, required: true}]
 },{timestamps: true});
 
 export default model('CompanyRoleMap', companyRoleMapSchema);
