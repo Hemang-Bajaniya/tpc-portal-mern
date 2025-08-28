@@ -1,13 +1,13 @@
 import CompanyCard from "@/components/custom/CompanyCard";
-import OngoingDrive from "@/components/custom/OngoingDrive";
 
-const Companies = [
+const Companie = [
   {
     logo: "https://example.com/logo.png",
     name: "Example Company",
     ctc: "10",
     location: "Remote",
     to: "/company/example",
+    applicationDate: "Not Confirm"
   },
   {
     logo: "https://example.com/logo.png",
@@ -15,6 +15,7 @@ const Companies = [
     ctc: "10",
     location: "Remote",
     to: "/company/example",
+    applicationDate:  new Date().toISOString().split('T')[0]
   },
   {
     logo: "https://example.com/logo.png",
@@ -22,17 +23,16 @@ const Companies = [
     ctc: "10",
     location: "Remote",
     to: "/company/example",
+    applicationDate: new Date().toISOString().split('T')[0],
   },
 ];
 
-export default function HomePage() {
+export default function Companies() {
   return (
     <div className="min-h-screen bg-gray-50 p-2">
       <div className="flex flex-col gap-4">
-        <OngoingDrive />
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-          {Companies.map((items: any, key: number) => (
+          {Companie.map((items: any, key: number) => (
             <CompanyCard
               key={key}
               logo={items.logo}
@@ -40,7 +40,7 @@ export default function HomePage() {
               ctc={items.ctc}
               location={items.location}
               to={items.to}
-              applicationDate={null}
+              applicationDate={items.applicationDate}
             />
           ))}
         </div>

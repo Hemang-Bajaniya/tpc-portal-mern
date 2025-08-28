@@ -56,11 +56,11 @@ export default function StudentHome() {
           {/* Desktop Links */}
           <div className="hidden md:flex gap-2">
             <Link to="" className="text-gray-700 hover:text-blue-700 px-3">Home</Link>
-            <Link to="/dashboard" className="text-gray-700 hover:text-blue-700 px-3">Companies</Link>
-            <Link to="/courses" className="text-gray-700 hover:text-blue-700 px-3">Applied</Link>
-            <Link to="/notices" className="text-gray-700 hover:text-blue-700 px-3">Completed</Link>
-            <Link to="/notices" className="text-gray-700 hover:text-blue-700 px-3">Placed Students</Link>
-            <Link to="/notices" className="text-gray-700 hover:text-blue-700 px-3">TPC</Link>
+            <Link to="companies" className="text-gray-700 hover:text-blue-700 px-3">Companies</Link>
+            <Link to="courses" className="text-gray-700 hover:text-blue-700 px-3">Applied</Link>
+            <Link to="notices" className="text-gray-700 hover:text-blue-700 px-3">Completed</Link>
+            <Link to="placedstudents" className="text-gray-700 hover:text-blue-700 px-3">Placed Students</Link>
+            <Link to="contacttpc" className="text-gray-700 hover:text-blue-700 px-3">TPC</Link>
           </div>
           {/* Mobile Menu Button */}
           <Drawer open={menuOpen} onOpenChange={setMenuOpen}>
@@ -77,11 +77,11 @@ export default function StudentHome() {
             <DrawerContent>
               <nav className="flex flex-col gap-4 mt-8 p-4">
                 <Link to="" className="text-gray-700 hover:text-blue-700" onClick={() => setMenuOpen(false)}>Home</Link>
-                <Link to="/dashboard" className="text-gray-700 hover:text-blue-700" onClick={() => setMenuOpen(false)}>Companies</Link>
-                <Link to="/courses" className="text-gray-700 hover:text-blue-700" onClick={() => setMenuOpen(false)}>Applied</Link>
-                <Link to="/notices" className="text-gray-700 hover:text-blue-700" onClick={() => setMenuOpen(false)}>Completed</Link>
-                <Link to="/notices" className="text-gray-700 hover:text-blue-700" onClick={() => setMenuOpen(false)}>Placed Students</Link>
-                <Link to="/notices" className="text-gray-700 hover:text-blue-700" onClick={() => setMenuOpen(false)}>TPC</Link>
+                <Link to="companies" className="text-gray-700 hover:text-blue-700" onClick={() => setMenuOpen(false)}>Companies</Link>
+                <Link to="courses" className="text-gray-700 hover:text-blue-700" onClick={() => setMenuOpen(false)}>Applied</Link>
+                <Link to="notices" className="text-gray-700 hover:text-blue-700" onClick={() => setMenuOpen(false)}>Completed</Link>
+                <Link to="placedstudents" className="text-gray-700 hover:text-blue-700" onClick={() => setMenuOpen(false)}>Placed Students</Link>
+                <Link to="contacttpc" className="text-gray-700 hover:text-blue-700" onClick={() => setMenuOpen(false)}>TPC</Link>
               </nav>
             </DrawerContent>
           </Drawer>

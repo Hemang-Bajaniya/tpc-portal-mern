@@ -7,6 +7,9 @@ import HomePage from "./tabs/Student/HomePage"
 import StudentProfileForm from "./tabs/Student/Profile"
 import AcademicDetailsForm from "./tabs/Student/AcademicDetailsForm"
 import Settings from "./tabs/Student/Settings"
+import Companies from "./tabs/Student/Companies"
+import { PlacedStudents } from "./tabs/Student/PlacedStudents"
+import { ContactTpc } from "./tabs/Student/ContactTpc"
 // import StudentDashboard from "./Pages/StudentDashboard"
 // import StudentCourses from "./Pages/StudentCourses"
 // import StudentNotices from "./Pages/StudentNotices"
@@ -25,6 +28,9 @@ function App() {
         <Route path="profile" element={<StudentProfileForm />} />
         <Route path="academic-details" element={<AcademicDetailsForm/> } />
         <Route path="settings" element={<Settings />} />
+        <Route path="companies" element={<Companies />} />
+        <Route path="placedstudents" element={<PlacedStudents />} />
+        <Route path="contacttpc" element={<ContactTpc />} />
         {/* <Route path="dashboard" element={<StudentDashboard />} />
         <Route path="courses" element={<StudentCourses />} />
         <Route path="notices" element={<StudentNotices />} /> */}

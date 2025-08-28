@@ -62,10 +62,10 @@ export default function OngoingDrive() {
           <Link to="/drive/selected">Selected Students</Link>
         </Button>
         <Button asChild variant="outline" className="w-full lg:w-auto">
-          <Link to="/drive/applied">Applied Students</Link>
+          <Link to="/drive/applied">Applicants</Link>
         </Button>
         <Button asChild variant="outline" className="w-full lg:w-auto">
-          <Link to="/drive/all">All Students</Link>
+          <Link to="/drive/all">Applicants from Department</Link>
         </Button>
       </CardFooter>
     </Card>
