@@ -7,9 +7,9 @@ import HomePage from "./tabs/Student/HomePage"
 import StudentProfileForm from "./tabs/Student/Profile"
 import AcademicDetailsForm from "./tabs/Student/AcademicDetailsForm"
 import Settings from "./tabs/Student/Settings"
-import Companies from "./tabs/Student/Companies"
-import { PlacedStudents } from "./tabs/Student/PlacedStudents"
-import { ContactTpc } from "./tabs/Student/ContactTpc"
+import TPODashboard from "./tabs/TPO/Dashboard"
+import TPOApproveTPC from "./tabs/TPO/ApproveTPC"
+import TPFDashboard from "./tabs/TPF/Dashboard"
 // import StudentDashboard from "./Pages/StudentDashboard"
 // import StudentCourses from "./Pages/StudentCourses"
 // import StudentNotices from "./Pages/StudentNotices"
@@ -23,19 +23,25 @@ function App() {
         <Route path="register" element={<Register />} />
       </Route>
 
+
+      {/* Student routes */}
       <Route path="/student" element={<StudentHome />}>
-        <Route index element={<HomePage/>} />
+        <Route index element={<HomePage />} />
         <Route path="profile" element={<StudentProfileForm />} />
-        <Route path="academic-details" element={<AcademicDetailsForm/> } />
+        <Route path="academic-details" element={<AcademicDetailsForm />} />
         <Route path="settings" element={<Settings />} />
-        <Route path="companies" element={<Companies />} />
-        <Route path="placedstudents" element={<PlacedStudents />} />
-        <Route path="contacttpc" element={<ContactTpc />} />
         {/* <Route path="dashboard" element={<StudentDashboard />} />
         <Route path="courses" element={<StudentCourses />} />
         <Route path="notices" element={<StudentNotices />} /> */}
         {/* Add more nested student pages here */}
       </Route>
+
+      {/* TPO routes */}
+      <Route path="/tpo/dashboard" element={<TPODashboard />} />
+      <Route path="/tpo/approve-tpc" element={<TPOApproveTPC />} />
+
+      {/* TPF routes */}
+      <Route path="/tpf/dashboard" element={<TPFDashboard />} />
 
       {/* Redirect root to /auth/login */}
       <Route path="/" element={<Navigate to="/auth/login" replace />} />

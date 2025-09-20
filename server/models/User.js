@@ -6,12 +6,14 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   role: {
     type: String,
-    enum: ['TPO', 'TPC', 'Student'],
+    enum: ['TPO', 'TPC', 'Student', 'TPF'],
     required: true
   },
+  dept_id
+    : { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
   approved: { type: Boolean, default: false },
   blacklisted: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
-}, {timestamps: true});
+}, { timestamps: true });
 
 export default mongoose.model('User', userSchema);
