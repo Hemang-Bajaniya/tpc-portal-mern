@@ -1,149 +1,153 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useEffect, useState } from "react"
-import axios from "axios"
-import { API_ROUTES } from "@/lib/apiRoutes"
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
-interface TPCProfile {
-    name: string
-    gender: string
-    dept_id: string
-    mobile: string
-}
+const TPCProfileForm = ({ allowUpdate }: { allowUpdate: boolean }) => {
+  // Dummy user data (match with model fields)
+  const userData = {
+    userId: "USER0001",
+    name: "Virendra",
+    gender: "M",
+    dept_id: "DEP001",
+    mobile: "9876543210",
+    created_at: "2024-09-01",
+  };
 
-export default function TPCProfileForm() {
-    const [form, setForm] = useState<TPCProfile>({
-        name: "",
-        gender: "",
-        dept_id: "",
-        mobile: "",
-    })
-    const [departments, setDepartments] = useState<any[]>([])
-    const [loading, setLoading] = useState(false)
-    const [success, setSuccess] = useState("")
-    const [error, setError] = useState("")
+  const [formData, setFormData] = useState(userData);
 
-    // Fetch profile + departments
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [profileRes, deptRes] = await Promise.all([
-                    axios.get(API_ROUTES.TPC_PROFILE, { withCredentials: true }),
-                    axios.get(API_ROUTES.DEPARTMENTS),
-                ])
-                setForm(profileRes.data.data)
-                setDepartments(deptRes.data)
-            } catch {
-                setError("Failed to load profile.")
-            }
-        }
-        fetchData()
-    }, [])
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value })
-    }
+  return (
+    <Card className="bg-white text-gray-800 font-sans h-full w-full rounded-none">
+      <div className="container mx-auto px-4 py-8">
+        <header className="mb-10">
+          <div className="flex items-center space-x-4">
+            <img
+              src={`https://placehold.co/64x64/7c3aed/ffffff?text=${userData.name[0]}`}
+              alt="User Avatar"
+              className="w-16 h-16 rounded-full border-2 border-black-500"
+            />
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                {formData?.name}
+              </h1>
+              <p className="text-gray-500">TPC User Profile</p>
+            </div>
+          </div>
+        </header>
 
-    const handleGenderChange = (value: string) => {
-        setForm({ ...form, gender: value })
-    }
+        <div className="bg-white rounded-md border border-gray-200 p-6 mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">
+            Profile Details
+          </h2>
+          <form>
+            <div className="grid grid-c
+            ols-1 md:grid-cols-2 gap-6">
+              {/* Name */}
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  id="name"
+                  className="border block w-full bg-white border-gray-300 rounded-md text-gray-900 focus:ring-gray-500 focus:border-gray-500 sm:text-sm h-10 px-3"
+                  value={formData?.name || ""}
+                  disabled={!allowUpdate}
+                  onChange={handleChange}
+                />
+              </div>
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setLoading(true)
-        setError("")
-        setSuccess("")
-        try {
-            await axios.put(API_ROUTES.TPC_PROFILE, {
-                name: form.name,
-                gender: form.gender,
-                mobile: form.mobile,
-            }, { withCredentials: true })
-            setSuccess("Profile updated successfully.")
-        } catch {
-            setError("Failed to update profile.")
-        } finally {
-            setLoading(false)
-        }
-    }
+              {/* Gender */}
+              <div>
+                <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2">
+                  Gender
+                </label>
+                <select
+                  id="gender"
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleChange}
+                  disabled={!allowUpdate}
+                  className="border block w-full bg-white border-gray-300 rounded-md text-gray-900 focus:ring-gray-500 focus:border-gray-500 sm:text-sm h-10 px-3"
+                >
+                  <option value="M">Male</option>
+                  <option value="F">Female</option>
+                  <option value="O">Other</option>
+                </select>
+              </div>
 
-    return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-            <Card className="w-full max-w-md p-6 shadow-lg rounded-2xl">
-                <CardContent>
-                    <h1 className="text-2xl font-bold mb-6 text-center">TPC Profile Management</h1>
+              {/* Department */}
+              <div>
+                <label htmlFor="dept_id" className="block text-sm font-medium text-gray-700 mb-2">
+                  Department
+                </label>
+                <select
+                  id="dept_id"
+                  name="dept_id"
+                  value={formData.dept_id}
+                  onChange={handleChange}
+                  disabled={!allowUpdate}
+                  className="border block w-full bg-white border-gray-300 rounded-md text-gray-900 focus:ring-gray-500 focus:border-gray-500 sm:text-sm h-10 px-3"
+                >
+                  <option value="DEP001">Computer Engineering</option>
+                  <option value="DEP002">Information Technology</option>
+                  <option value="DEP003">Electronics</option>
+                </select>
+              </div>
 
-                    {error && <div className="mb-4 text-red-600 text-center text-sm font-medium">{error}</div>}
-                    {success && <div className="mb-4 text-green-600 text-center text-sm font-medium">{success}</div>}
+              {/* Mobile */}
+              <div>
+                <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 mb-2">
+                  Mobile
+                </label>
+                <input
+                  type="text"
+                  name="mobile"
+                  id="mobile"
+                  className="border block w-full bg-white border-gray-300 rounded-md text-gray-900 focus:ring-gray-500 focus:border-gray-500 sm:text-sm h-10 px-3"
+                  value={formData?.mobile || ""}
+                  disabled={!allowUpdate}
+                  onChange={handleChange}
+                />
+              </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* Name */}
-                        <div>
-                            <Label htmlFor="name" className="mb-2 block">Name</Label>
-                            <Input
-                                id="name"
-                                name="name"
-                                value={form.name}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
+              {/* Created At */}
+              <div className="md:col-span-2">
+                <label htmlFor="created_at" className="block text-sm font-medium text-gray-700 mb-2">
+                  Created At
+                </label>
+                <input
+                  type="text"
+                  id="created_at"
+                  className="block w-full bg-gray-100 border-gray-300 rounded-md border text-gray-900 sm:text-sm h-10 px-3"
+                  value={new Date(formData?.created_at).toLocaleDateString()}
+                  disabled
+                />
+              </div>
+            </div>
 
-                        {/* Gender */}
-                        <div>
-                            <Label htmlFor="gender" className="mb-2 block">Gender</Label>
-                            <Select value={form.gender} onValueChange={handleGenderChange}>
-                                <SelectTrigger id="gender" className="w-full">
-                                    <SelectValue placeholder="Select gender" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="M">Male</SelectItem>
-                                    <SelectItem value="F">Female</SelectItem>
-                                    <SelectItem value="O">Other</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {/* Department (disabled) */}
-                        <div>
-                            <Label htmlFor="dept_id" className="mb-2 block">Department</Label>
-                            <Select value={form.dept_id} disabled>
-                                <SelectTrigger id="dept_id" className="w-full">
-                                    <SelectValue placeholder="Select department" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {departments.map((dept: any) => (
-                                        <SelectItem key={dept._id} value={dept._id}>
-                                            {dept.dept_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {/* Mobile */}
-                        <Input
-                            id="mobile"
-                            name="mobile"
-                            value={form.mobile}
-                            onChange={handleChange}
-                            required
-                            pattern="[0-9]{10}"
-                            maxLength={10}
-                            placeholder="Enter 10-digit mobile number"
-                        />
-
-
-                        {/* Submit Button */}
-                        <Button className="w-full" type="submit" disabled={loading}>
-                            {loading ? "Saving..." : "Save Profile"}
-                        </Button>
-                    </form>
-                </CardContent>
-            </Card>
+            {/* Save Button */}
+            {allowUpdate && (
+              <div className="mt-8 flex justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="bg-gray-500 text-white hover:bg-black hover:text-white duration-300 cursor-pointer"
+                  onClick={() => alert("Changes Saved! (Test Only)")}
+                >
+                  Save Changes
+                </Button>
+              </div>
+            )}
+          </form>
         </div>
-    )
-}
+      </div>
+    </Card>
+  );
+};
+
+export default TPCProfileForm;

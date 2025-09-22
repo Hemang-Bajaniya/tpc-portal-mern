@@ -1,12 +1,14 @@
 import { useState } from "react"
-import { Link, Outlet } from "react-router-dom"
+import { Link, Outlet, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
+import { Drawer, DrawerContent, DrawerTrigger, DrawerTitle, DrawerDescription } from "@/components/ui/drawer"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function StudentHome() {
   const [profileOpen, setProfileOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+
+  const navigate = useNavigate()
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -25,6 +27,8 @@ export default function StudentHome() {
               </Button>
             </DrawerTrigger>
             <DrawerContent>
+              <DrawerTitle className="sr-only">Profile Menu</DrawerTitle>
+              <DrawerDescription className="sr-only">Navigation links for student profile and settings.</DrawerDescription>
               <div className="p-4">
                 <div className="flex items-center gap-3 mb-6">
                   <Avatar>
@@ -40,7 +44,7 @@ export default function StudentHome() {
                   <Link to="profile" className="text-gray-700 hover:text-blue-700" onClick={() => setProfileOpen(false)}>Profile</Link>
                   <Link to="academic-details" className="text-gray-700 hover:text-blue-700" onClick={() => setProfileOpen(false)}>Acadmic Details</Link>
                   <Link to="settings" className="text-gray-700 hover:text-blue-700" onClick={() => setProfileOpen(false)}>Settings</Link>
-                  <Button variant="outline" className="mt-4 w-full" onClick={() => setProfileOpen(false)}>Logout</Button>
+                  <Button variant="outline" className="mt-4 w-full" onClick={() => navigate("/auth/logout")}>Logout</Button>
                 </nav>
               </div>
             </DrawerContent>
@@ -57,7 +61,7 @@ export default function StudentHome() {
           <div className="hidden md:flex gap-2">
             <Link to="" className="text-gray-700 hover:text-blue-700 px-3">Home</Link>
             <Link to="companies" className="text-gray-700 hover:text-blue-700 px-3">Companies</Link>
-            <Link to="courses" className="text-gray-700 hover:text-blue-700 px-3">Applied</Link>
+            <Link to="applied" className="text-gray-700 hover:text-blue-700 px-3">Applied</Link>
             <Link to="notices" className="text-gray-700 hover:text-blue-700 px-3">Completed</Link>
             <Link to="placedstudents" className="text-gray-700 hover:text-blue-700 px-3">Placed Students</Link>
             <Link to="contacttpc" className="text-gray-700 hover:text-blue-700 px-3">TPC</Link>
@@ -75,10 +79,12 @@ export default function StudentHome() {
               </Button>
             </DrawerTrigger>
             <DrawerContent>
+              <DrawerTitle className="sr-only">Main Menu</DrawerTitle>
+              <DrawerDescription className="sr-only">Main navigation links for the application.</DrawerDescription>
               <nav className="flex flex-col gap-4 mt-8 p-4">
                 <Link to="" className="text-gray-700 hover:text-blue-700" onClick={() => setMenuOpen(false)}>Home</Link>
                 <Link to="companies" className="text-gray-700 hover:text-blue-700" onClick={() => setMenuOpen(false)}>Companies</Link>
-                <Link to="courses" className="text-gray-700 hover:text-blue-700" onClick={() => setMenuOpen(false)}>Applied</Link>
+                <Link to="applied" className="text-gray-700 hover:text-blue-700" onClick={() => setMenuOpen(false)}>Applied</Link>
                 <Link to="notices" className="text-gray-700 hover:text-blue-700" onClick={() => setMenuOpen(false)}>Completed</Link>
                 <Link to="placedstudents" className="text-gray-700 hover:text-blue-700" onClick={() => setMenuOpen(false)}>Placed Students</Link>
                 <Link to="contacttpc" className="text-gray-700 hover:text-blue-700" onClick={() => setMenuOpen(false)}>TPC</Link>

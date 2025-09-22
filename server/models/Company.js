@@ -3,6 +3,7 @@ import { Schema, model } from 'mongoose';
 
 const companySchema = new Schema({
   name: String,
+  company_logo: String,
   company_description: String,
   company_website: String,
   company_location: String,

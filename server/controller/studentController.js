@@ -2,6 +2,13 @@ import { apiResponse } from '../util/apiResponse.js';
 import StudentProfile from '../models/StudentProfile.js';
 import PendingChange from '../models/PendingChange.js';
 import AcademicDetails from '../models/AcademicDetails.js';
+import User from '../models/User.js';
+import bcrypt from 'bcryptjs';
+import Company from '../models/Company.js';
+import CompanyJobProfile from '../models/CompanyJobProfile.js';
+import Drive from '../models/PlacementDrive.js';
+import TpcProfile from '../models/TpcProfile.js';
+import Department from '../models/Department.js'; // Added this import
 
 export const getStudentProfile = async (req, res) => {
     try {
@@ -157,4 +164,126 @@ export const updateStudentProfile = async (req, res) => {
 
         return res.status(500).send(apiResponse({ data: null, message: error.message, success: false }));
     }
+};
+
+export const getCompanies = async (req, res) => {
+    try {
+        // 1. Get the authenticated student's user ID.
+        const { userId } = req.user;
+        if (!userId) {
+            return res.status(401).json(new apiResponse({
+                success: false,
+                message: "User not authenticated",
+                status: 401,
+            }));
+        }
+
+        const student = await StudentProfile.findOne({ userId });
+        if (!student) {
+            return res.status(404).json(new apiResponse({
+                success: false,
+                message: "Student profile not found",
+                status: 404,
+            }));
+        }
+
+        // 2. Aggregate job profiles, company details, and drive information.
+        const jobOpportunities = await CompanyJobProfile.aggregate([
+            { $match: { for_dept: student.dept_id } },
+            {
+                $lookup: {
+                    from: "companies",
+                    localField: "company_id",
+                    foreignField: "_id",
+                    as: "companyDetails"
+                }
+            },
+            {
+                $lookup: {
+                    from: "placementdrives",
+                    localField: "_id",
+                    foreignField: "job_profiles",
+                    as: "driveDetails"
+                }
+            },
+            { $unwind: "$companyDetails" },
+            { $unwind: "$driveDetails" },
+            {
+                $project: {
+                    _id: 0,
+                    logo: "$companyDetails.company_logo",
+                    name: "$companyDetails.name",
+                    ctc: { $toString: { $divide: ["$ctc", 100000] } },
+                    location: "$location",
+                    to: { $concat: ["/company/", { $toString: "$companyDetails._id" }] },
+                    applicationDate: {
+                        $dateToString: {
+                            format: "%Y-%m-%d",
+                            date: "$driveDetails.last_date_to_apply"
+                        }
+                    }
+                }
+            }
+        ]);
+
+        if (jobOpportunities.length === 0) {
+            return res.status(200).json(new apiResponse({
+                data: [],
+                message: "No relevant job opportunities found for your department.",
+                status: 200,
+            }));
+        }
+
+        return res.status(200).json(new apiResponse({
+            data: jobOpportunities,
+            message: "Successfully fetched company opportunities.",
+            status: 200,
+        }));
+    } catch (err) {
+        console.error("Error fetching companies for student:", err);
+        return res.status(500).json(new apiResponse({ success: false, message: 'Internal Server Error', error: err.message, status: 500 }));
+    }
+};
+
+export const getAllTpcProfiles = async (req, res) => {
+  try {
+    const tpcs = await TpcProfile.find();
+
+    if (tpcs.length === 0) {
+      return res.status(404).json(
+        new apiResponse({
+          success: false,
+          message: "No TPC profiles found",
+          status: 404,
+        })
+      );
+    }
+
+    const populatedTpcs = await Promise.all(
+      tpcs.map(async (item) => {
+        const dept = await Department.findById(item.dept_id);
+        return {
+          ...item.toObject(), 
+          dept_name: dept?.dept_name || null,
+        };
+      })
+    );
+
+    return res.json(
+      new apiResponse({
+        data: { profiles: populatedTpcs }, // Wrap in 'profiles' key
+        message: "TPC profiles fetched",
+        status: 200,
+      })
+    );
+  } catch (err) {
+    return res.status(500).json(
+      new apiResponse({
+        success: false,
+        message: "Server error",
+        error: err.message,
+        status: 500,
+      })
+    );
+  }
 };
