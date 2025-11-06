@@ -2,42 +2,53 @@ import { apiResponse } from '../util/apiResponse.js';
 import StudentProfile from '../models/StudentProfile.js';
 import PendingChange from '../models/PendingChange.js';
 import AcademicDetails from '../models/AcademicDetails.js';
+import TpcProfile from '../models/TpcProfile.js';
+import Department from '../models/Department.js';
 import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
-import Company from '../models/Company.js';
-import CompanyJobProfile from '../models/CompanyJobProfile.js';
-import Drive from '../models/PlacementDrive.js';
-import TpcProfile from '../models/TpcProfile.js';
-import Department from '../models/Department.js'; // Added this import
 
 export const getStudentProfile = async (req, res) => {
     try {
-        const { userId } = req.user;
-        const profile = await StudentProfile.findOne({ userId }).populate("dept_id");
+        const { userId, role } = req.user;
+        const { studentId } = req.query;
+
+        let profile;
+        if (studentId ) {
+            profile = await StudentProfile.findOne({ college_id: studentId }).populate("dept_id");
+        } else {
+            profile = await StudentProfile.findOne({ userId }).populate("dept_id");
+        }
+
         if (!profile)
             return res.status(404).send(new apiResponse({ data: null, message: "Profile not found" }));
+
         // Ensure resume path is included
         const profileObj = profile.toObject();
         profileObj.resume = profile.resume || "";
         return res.send(new apiResponse({ data: profileObj, message: "Found", success: true }));
     } catch (error) {
-        return res.status(404).send(new apiResponse({ data: null, message: error }));
+        return res.status(500).send(new apiResponse({ data: null, message: error.message }));
     }
 };
 
 export const getStudentAcademicProfile = async (req, res) => {
     try {
         const { userId } = req.user;
+
         const profile = await StudentProfile.findOne({ userId });
-        const academicProfile = await AcademicDetails.findOne({ user_id: profile._id });
+
         if (!profile)
             return res.status(404).send(new apiResponse({ data: null, message: "Profile not found" }));
-        // Ensure resume path is included
-        return res.send(new apiResponse({ data: profile, message: "Found", success: true }));
+
+        const academicProfile = await AcademicDetails.findOne({ user_id: profile._id });
+
+        return res.send(new apiResponse({ data: academicProfile, message: "Found", success: true }));
     } catch (error) {
-        return res.status(404).send(new apiResponse({ data: null, message: error }));
+        console.error(error);
+        return res.status(500).send(new apiResponse({ data: null, message: error.message || error }));
     }
 };
+
 
 export const submitAcademicChanges = async (req, res) => {
     try {
@@ -139,7 +150,6 @@ export const updateStudentProfile = async (req, res) => {
     try {
         const { userId } = req.user;
         const updateFields = { ...req.body };
-        console.log(userId,);
 
         // If resume is uploaded as a file (multipart/form-data)
         if (req.file) {
@@ -160,89 +170,106 @@ export const updateStudentProfile = async (req, res) => {
         }
         return res.send(apiResponse({ data: updated, message: "Profile updated", success: true }));
     } catch (error) {
-        console.log(error);
+        // console.log(error);
 
         return res.status(500).send(apiResponse({ data: null, message: error.message, success: false }));
     }
 };
 
-export const getCompanies = async (req, res) => {
-    try {
-        // 1. Get the authenticated student's user ID.
-        const { userId } = req.user;
-        if (!userId) {
-            return res.status(401).json(new apiResponse({
-                success: false,
-                message: "User not authenticated",
-                status: 401,
-            }));
-        }
+export const updateStudentAcadmicDetails = async (req, res) => {
+  try {
+    const { userId } = req.user; // from auth middleware
+    const updateFields = { ...req.body };
 
-        const student = await StudentProfile.findOne({ userId });
-        if (!student) {
-            return res.status(404).json(new apiResponse({
-                success: false,
-                message: "Student profile not found",
-                status: 404,
-            }));
-        }
+    const profile = await StudentProfile.findOne({ userId });
 
-        // 2. Aggregate job profiles, company details, and drive information.
-        const jobOpportunities = await CompanyJobProfile.aggregate([
-            { $match: { for_dept: student.dept_id } },
-            {
-                $lookup: {
-                    from: "companies",
-                    localField: "company_id",
-                    foreignField: "_id",
-                    as: "companyDetails"
-                }
-            },
-            {
-                $lookup: {
-                    from: "placementdrives",
-                    localField: "_id",
-                    foreignField: "job_profiles",
-                    as: "driveDetails"
-                }
-            },
-            { $unwind: "$companyDetails" },
-            { $unwind: "$driveDetails" },
-            {
-                $project: {
-                    _id: 0,
-                    logo: "$companyDetails.company_logo",
-                    name: "$companyDetails.name",
-                    ctc: { $toString: { $divide: ["$ctc", 100000] } },
-                    location: "$location",
-                    to: { $concat: ["/company/", { $toString: "$companyDetails._id" }] },
-                    applicationDate: {
-                        $dateToString: {
-                            format: "%Y-%m-%d",
-                            date: "$driveDetails.last_date_to_apply"
-                        }
-                    }
-                }
-            }
-        ]);
-
-        if (jobOpportunities.length === 0) {
-            return res.status(200).json(new apiResponse({
-                data: [],
-                message: "No relevant job opportunities found for your department.",
-                status: 200,
-            }));
-        }
-
-        return res.status(200).json(new apiResponse({
-            data: jobOpportunities,
-            message: "Successfully fetched company opportunities.",
-            status: 200,
-        }));
-    } catch (err) {
-        console.error("Error fetching companies for student:", err);
-        return res.status(500).json(new apiResponse({ success: false, message: 'Internal Server Error', error: err.message, status: 500 }));
+    if (!profile) {
+      return res.status(404).send(
+        apiResponse({
+          data: null,
+          message: "Profile not found",
+          success: false,
+        })
+      );
     }
+
+    if (req.file) {
+      updateFields.results = req.file.path.replace(/\\/g, "/");
+    }
+
+    if (typeof updateFields.semesters === "string") {
+      try {
+        updateFields.semesters = JSON.parse(updateFields.semesters);
+      } catch (err) {
+        return res.status(400).send(
+          apiResponse({
+            data: null,
+            message: "Invalid semesters format. Must be a valid JSON array.",
+            success: false,
+          })
+        );
+      }
+    }
+
+    [
+      "hsc_percentage",
+      "diploma_cgpa",
+      "ssc_percentage",
+      "be_percentage",
+      "be_cgpa",
+      "liveKT",
+      "deadKT",
+    ].forEach((field) => {
+      if (updateFields[field] !== undefined) {
+        updateFields[field] = Number(updateFields[field]);
+      }
+    });
+
+    if (!updateFields.semesters) {
+      updateFields.semesters = Array.from({ length: 8 }, (_, i) => ({
+        sem: i + 1,
+        sgpa: 0,
+        percentage: 0,
+      }));
+    }
+
+    updateFields.approved = "pending";
+
+    const pendingChange = await PendingChange.create({
+      user_id: profile._id,
+      dept_id: profile.dept_id,
+      type: "academic",
+      changes: updateFields,
+      status: "pending",
+      submittedAt: new Date(),
+    });
+
+    const updated = await AcademicDetails.findOneAndUpdate(
+      { user_id: profile._id },
+      { 
+        $set: updateFields,
+        $setOnInsert: { user_id: profile._id }
+      },
+      { new: true, upsert: true }
+    );
+
+    return res.send(
+      apiResponse({
+        data: pendingChange,
+        message: "Academic update submitted and pending approval.",
+        success: true,
+      })
+    );
+  } catch (error) {
+    console.error("Error updating academic details:", error);
+    return res.status(500).send(
+      apiResponse({
+        data: null,
+        message: error.message || "Internal server error",
+        success: false,
+      })
+    );
+  }
 };
 
 export const getAllTpcProfiles = async (req, res) => {
@@ -277,12 +304,87 @@ export const getAllTpcProfiles = async (req, res) => {
       })
     );
   } catch (err) {
+    console.error("getAllTpcProfiles error:", err);
     return res.status(500).json(
       new apiResponse({
         success: false,
         message: "Server error",
         error: err.message,
         status: 500,
+      })
+    );
+  }
+};
+
+export const changePassword = async (req, res) => {
+  try {
+    const { userId } = req.user; // assuming req.user is set by auth middleware
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).send(
+        apiResponse({
+          data: null,
+          message: "Current and new passwords are required.",
+          success: false,
+        })
+      );
+    }
+
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).send(
+        apiResponse({
+          data: null,
+          message: "User not found.",
+          success: false,
+        })
+      );
+    }
+
+    // Compare current password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).send(
+        apiResponse({
+          data: null,
+          message: "Incorrect current password.",
+          success: false,
+        })
+      );
+    }
+
+    // Validate new password strength (optional)
+    if (newPassword.length < 6) {
+      return res.status(400).send(
+        apiResponse({
+          data: null,
+          message: "New password must be at least 6 characters long.",
+          success: false,
+        })
+      );
+    }
+
+    // Hash new password
+    const hashed = await bcrypt.hash(newPassword, 10);
+    user.password = hashed;
+    await user.save();
+
+    return res.send(
+      apiResponse({
+        data: null,
+        message: "Password updated successfully.",
+        success: true,
+      })
+    );
+  } catch (error) {
+    console.error("Change Password Error:", error);
+    return res.status(500).send(
+      apiResponse({
+        data: null,
+        message: "Server error",
+        success: false,
       })
     );
   }

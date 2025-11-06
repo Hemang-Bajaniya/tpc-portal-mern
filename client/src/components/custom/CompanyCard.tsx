@@ -6,10 +6,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 interface Props {
   logo: string;
   name: string;
-  ctc: string;
+  ctc: number;
   location: string;
   to: string;
   applicationDate: string | null;
+  drive_complition_date: string | null;
+  matchedCount?: number;
 }
 
 export default function CompanyCard({
@@ -19,6 +21,8 @@ export default function CompanyCard({
   location,
   to,
   applicationDate,
+  drive_complition_date,
+  matchedCount,
 }: Props) {
   return (
     <Card className="w-full max-w-md shadow-md rounded-xl hover:shadow-lg transition-shadow duration-300">
@@ -32,14 +36,24 @@ export default function CompanyCard({
         <div className="flex-grow space-y-1">
           <h2 className="text-lg font-semibold text-gray-800">{name}</h2>
           <p className="text-sm text-gray-500">
-            CTC: <strong>₹{ctc} LPA</strong>
+            CTC: <strong>₹ {ctc/100000} LPA</strong>
           </p>
           <p className="text-sm text-gray-500">
             Location: <strong>{location}</strong>
           </p>
+          {matchedCount !== undefined && matchedCount > 0 && (
+            <p className="text-sm text-green-600">
+              Skills Matched: <strong>{matchedCount}</strong>
+            </p>
+          )}
           {applicationDate && (
             <p className="text-sm text-gray-500">
-              Apply by: <strong>{applicationDate}</strong>
+              Application Deadline: <strong>{applicationDate}</strong>
+            </p>
+          )}
+          {drive_complition_date && (
+            <p className="text-sm text-gray-500">
+              Drive Completion Date: <strong>{drive_complition_date}</strong>
             </p>
           )}
         </div>

@@ -29,7 +29,7 @@ export const login = async (req, res) => {
         .json(
           apiResponse({
             success: false,
-            message: "Invalid email.",
+            message: "Invalid credentials.",
             status: 401,
           })
         );
@@ -41,7 +41,7 @@ export const login = async (req, res) => {
         .json(
           apiResponse({
             success: false,
-            message: "Invalid password.",
+            message: "Invalid credentials.",
             status: 401,
           })
         );
@@ -69,17 +69,12 @@ export const login = async (req, res) => {
     // Set token in HTTP-only cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 3600000, // 1 hour
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-     // Set token in HTTP-only cookie
-    res.cookie("email", email, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 3600000, // 1 hour
+    // Set user in HTTP-only cookie
+    res.cookie("student_user", JSON.stringify(user), {
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json(
@@ -105,30 +100,35 @@ export const login = async (req, res) => {
 
 export const register = async (req, res) => {
   try {
-    const { email, password, role, deptId, ...profileFields } = req.body;
+    const {
+      email,
+      password,
+      role,
+      deptId,
+      college_id,
+      f_name,
+      ...profileFields
+    } = req.body;
+
     if (!email || !password || !role || !deptId) {
-      return res
-        .status(400)
-        .json(
-          apiResponse({
-            success: false,
-            message: "Email, password, role, and department are required.",
-            status: 400,
-          })
-        );
+      return res.status(400).json(
+        apiResponse({
+          success: false,
+          message: "Email, password, role, and department are required.",
+          status: 400,
+        })
+      );
     }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res
-        .status(409)
-        .json(
-          apiResponse({
-            success: false,
-            message: "User already exists.",
-            status: 409,
-          })
-        );
+      return res.status(409).json(
+        apiResponse({
+          success: false,
+          message: "User already exists.",
+          status: 409,
+        })
+      );
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -148,8 +148,11 @@ export const register = async (req, res) => {
       const sp = await StudentProfile.create({
         userId: user._id,
         dept_id: deptId,
+        college_id,
+        f_name,
         ...profileFields,
       });
+
       await AcademicDetails.create({ user_id: sp._id });
     } else if (role === "TPC") {
       await TpcProfile.create({
@@ -164,30 +167,56 @@ export const register = async (req, res) => {
         ...profileFields,
       });
     }
-    return res
-      .status(201)
-      .json(
-        apiResponse({
-          message:
-            "Registration successful. Please wait for approval if required.",
-          status: 201,
-        })
-      );
+
+    return res.status(201).json(
+      apiResponse({
+        message:
+          "Registration successful. Please wait for approval if required.",
+        status: 201,
+      })
+    );
   } catch (err) {
-    return res
-      .status(500)
-      .json(
-        apiResponse({
-          success: false,
-          message: "Server error",
-          error: err.message,
-          status: 500,
-        })
-      );
+    return res.status(500).json(
+      apiResponse({
+        success: false,
+        message: "Server error",
+        error: err.message,
+        status: 500,
+      })
+    );
   }
 };
 
-export const logout = (req, res) => {
-  res.clearCookie('token');
-  res.status(200).json(apiResponse({ message: 'Logout successful.', status: 200 }));
+export const logout = async (req, res) => {
+  try {
+    // Even if no cookies are set, clear them safely
+    res.clearCookie("token", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
+
+    res.clearCookie("student_user", {
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
+
+    return res.status(200).json(
+      apiResponse({
+        success: true,
+        message: "Logout successful",
+        status: 200,
+      })
+    );
+  } catch (err) {
+    console.error("Logout error:", err);
+    return res.status(500).json(
+      apiResponse({
+        success: false,
+        message: "Failed to logout",
+        error: err.message,
+        status: 500,
+      })
+    );
+  }
 };

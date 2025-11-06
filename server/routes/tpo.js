@@ -1,10 +1,11 @@
 import express from 'express';
 import User from '../models/User.js';
+import { authenticate, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // TPO: List all TPCs pending approval
-router.get('/tpc/pending', async (req, res) => {
+router.get('/tpc/pending', authenticate, authorize(["TPO"]), async (req, res) => {
     try {
         const pendingTPCs = await User.find({ role: 'TPC', approved: false });
         res.json(pendingTPCs);
@@ -14,7 +15,7 @@ router.get('/tpc/pending', async (req, res) => {
 });
 
 // TPO: Approve or reject a TPC
-router.post('/tpc/approve', async (req, res) => {
+router.post('/tpc/approve', authenticate, authorize(["TPO"]), async (req, res) => {
     try {
         const { userId, approve } = req.body;
         const user = await User.findById(userId);

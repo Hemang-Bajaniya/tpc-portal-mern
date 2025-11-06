@@ -1,9 +1,19 @@
 import multer from 'multer';
 import path from 'path';
 
-const storage = multer.diskStorage({
+const storageResume = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/resumes/');
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const storageResult = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/results/');
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -19,6 +29,5 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-const uploadResume = multer({ storage, fileFilter });
-
-export default uploadResume;
+export const uploadResume = multer({ storage: storageResume, fileFilter });
+export const uploadResults = multer({ storage: storageResult, fileFilter });

@@ -11,7 +11,7 @@ const tpfProfile = new mongoose.Schema(
             ref: 'Department',
             required: true
         },
-    }
+    }, { timestamps: true }
 );
 
 export default mongoose.model("TPFProfile", tpfProfile);

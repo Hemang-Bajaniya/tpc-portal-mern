@@ -4,7 +4,7 @@ const semesterSchema = new mongoose.Schema({
   sem: { type: Number, required: true },
   sgpa: { type: Number, default: 0 },
   percentage: { type: Number, default: 0 },
-  resultFile: { type: String, default: "" }, // path to uploaded file
+  // resultFile: { type: String, default: "" }, // path to uploaded file
 });
 
 const academicDetailsSchema = new mongoose.Schema({
@@ -29,6 +29,10 @@ const academicDetailsSchema = new mongoose.Schema({
       sem: i + 1, sgpa: 0,
     }))
   },
+
+  results: { type: String, default: "" }, // paths to uploaded result files for each semester
+
+  approved: { type: String, default: "pending", enum: ["pending", "approved", "rejected"] }, 
 
 }, { timestamps: true });
 

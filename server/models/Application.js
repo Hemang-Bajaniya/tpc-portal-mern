@@ -13,6 +13,7 @@ const roundStatusSchema = new Schema({
 const applicationSchema = new Schema({
   student_id: { type: Schema.Types.ObjectId, ref: 'Student', required: true },
   company_role_id: { type: Schema.Types.ObjectId, ref: 'CompanyRoleMap', required: true },
+  job_profile_id: { type: Schema.Types.ObjectId, ref: 'JobProfile', required: true },
   round_statuses: [roundStatusSchema],
   status: {
     type: String,
@@ -23,6 +24,6 @@ const applicationSchema = new Schema({
     type: Date,
     default: Date.now
   }
-});
+}, { timestamps: true });
 
 export default model('Application', applicationSchema);

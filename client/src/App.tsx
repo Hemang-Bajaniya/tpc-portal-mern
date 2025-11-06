@@ -13,59 +13,156 @@ import Settings from "./tabs/Student/Settings";
 import TPODashboard from "./tabs/TPO/Dashboard";
 import TPOApproveTPC from "./tabs/TPO/ApproveTPC";
 import TPFDashboard from "./tabs/TPF/Dashboard";
-import Companies from "./tabs/Student/Companies";
+import Jobs from "./tabs/Student/Jobs";
 import { PlacedStudents } from "./tabs/Student/PlacedStudents";
 import Applied from "./tabs/Student/Applied";
 import { ContactTpc } from "./tabs/Student/ContactTpc";
-import { Logout } from "./tabs/Authontication/Logout";
+import Logout from "./tabs/Authontication/Logout";
 import TPCLayout from "./tabs/TPC/Layout";
-import TPCDashboard from "./tabs/TPC/Dashboard";
 import TPCApproveStudent from "./tabs/TPC/ApproveStudent";
 import TPCProfileForm from "./tabs/TPC/Profile";
 import StudentProfileView from "./tabs/Student/StudentProfile";
 import { StudentManage } from "./tabs/TPC/StudentManage";
+import CompletedDrive from "./tabs/Student/CompletedDrive";
+import { StudentsInPlacementDrive } from "./tabs/Student/StudentsInPlacementDrive";
+import JobDetailsPage from "./tabs/Student/JobDetailsPage";
+import StudentProfileManage from "./tabs/TPC/StudentProfileManage";
+import { CompanyManagement } from "./tabs/TPC/CompanyManagement";
+import AddCompanyForm from "./tabs/TPC/AddCompanyForm";
+import UpdateCompanyForm from "./tabs/TPC/UpdateCompany";
+import { JobProfileManagement } from "./tabs/TPC/JobProfileManage";
+import AddJobProfileForm from "./tabs/TPC/AddJobProfile";
+import ViewJobProfileForm from "./tabs/TPC/ViewJobProfile";
+import { ApplicationManagement } from "./tabs/TPC/ApplicationManagement";
+import { Toaster } from "sonner";
+import ManageAcadmicDetails from "./tabs/TPC/ManageAcadmicDetails";
+import { PlacementDriveListJobs } from "./tabs/TPC/PlacementDriveListJobs";
 
 function App() {
   return (
-    <Routes>
-      <Route path="/auth">
-        <Route index element={<Navigate to="login" replace />} />
-        <Route path="login" element={<Login />} />
-        <Route path="register" element={<Register />} />
-        <Route path="logout" element={<Logout />} />
-      </Route>
+    <>
+      <Toaster position="top-right" richColors />
+      <Routes>
+        <Route path="/auth">
+          <Route index element={<Navigate to="login" replace />} />
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
+          <Route path="logout" element={<Logout />} />
+        </Route>
 
-      {/* Student routes */}
-      <Route path="/student/dashboard" element={<StudentHome />}>
-        <Route index element={<HomePage />} />
-        <Route path="profile" element={<StudentProfileView allowUpdate={true} />} />
-        <Route path="academic-details" element={<AcademicDetailsForm />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="companies" element={<Companies />} />
-        <Route path="applied" element={<Applied />} />
-        <Route path="placedstudents" element={<PlacedStudents />} />
-        <Route path="contacttpc" element={<ContactTpc />} />
-      </Route>
+        {/* Student routes */}
+        <Route path="/student/dashboard" element={<StudentHome />}>
+          <Route index element={<HomePage />} />
+          <Route path="home">
+            <Route path="selected" element={<StudentsInPlacementDrive />} />
+            <Route path="applicants" element={<StudentsInPlacementDrive />} />
+            <Route
+              path="applicants-from-department"
+              element={<StudentsInPlacementDrive />}
+            />
+          </Route>
+          <Route
+            path="profile"
+            element={<StudentProfileView allowUpdate={true} />}
+          />
+          <Route path="academic-details" element={<AcademicDetailsForm />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="jobs" element={<Jobs />} />
+          <Route path="applied" element={<Applied />} />
+          <Route
+            path="placedstudents"
+            element={<PlacedStudents backgroundColor="bg-gray-50" />}
+          />
+          <Route
+            path="contacttpc"
+            element={<ContactTpc backgroundColor="bg-gray-50" />}
+          />
+          <Route path="completed-drive" element={<CompletedDrive />} />
+          <Route path="jobs/:id" element={<JobDetailsPage />} />
+          <Route path=":id/jobs/:id" element={<JobDetailsPage />} />
+        </Route>
 
-      {/* TPC routes with sidebar layout */}
-      <Route path="/tpc" element={<TPCLayout />}>
-        <Route path="dashboard" element={<TPCDashboard />} />
-        <Route path="approve-student" element={<TPCApproveStudent />} />
-        <Route path="profile" element={<TPCProfileForm allowUpdate={true} />} />
-        <Route path="student-management" element={<StudentManage />} />"
-        {/* <Route path="userview" element={<UserProfile allowUpdate={false}/>} /> */}
-      </Route>
+        {/* TPC routes with sidebar layout */}
+        <Route path="/tpc" element={<TPCLayout />}>
+          <Route index element={<TPCApproveStudent />} />
+          <Route path="approve-student" element={<TPCApproveStudent />} />
+          <Route path="approve-acadmic-details" element={<ManageAcadmicDetails />} />
+          <Route
+            path="profile"
+            element={<TPCProfileForm allowUpdate={true} />}
+          />
+          <Route path="student-management" element={<StudentManage />}>
+            <Route
+              path="student-profile/:userId/:studentId"
+              element={<StudentProfileManage allowUpdate={false} />}
+            />
+            <Route
+              path="student-profile-update/:userId/:studentId"
+              element={<StudentProfileManage allowUpdate={true} />}
+            />
+          </Route>
+          <Route path="company-management" element={<CompanyManagement />}>
+            <Route path="add-company" element={<AddCompanyForm />} />
+            <Route
+              path="view-company/:id"
+              element={<UpdateCompanyForm allowUpdate={false} />}
+            />
+            <Route
+              path="update-company/:id"
+              element={<UpdateCompanyForm allowUpdate={true} />}
+            />
+          </Route>
+          <Route
+            path="job-profile-management"
+            element={<JobProfileManagement />}
+          >
+            <Route path="add-job-profile" element={<AddJobProfileForm />} />
+            <Route
+              path="view-job-profile/:id"
+              element={<ViewJobProfileForm allowUpdate={false} />}
+            />
+          </Route>
+          <Route
+            path="/tpc/placement-drives-management"
+            element={<PlacementDriveListJobs />}
+          ></Route>
+          <Route
+            path="/tpc/application-management"
+            element={<ApplicationManagement />}
+          >
+            {/* <Route path="add-application" element={<AddApplicationForm />} />
+          <Route
+            path="view-application/:id"
+            element={<ViewApplicationForm />}
+          />
+          <Route
+            path="update-application/:id"
+            element={<UpdateApplicationForm />}
+          />
+        </Route> */}
+            {/* <Route path="userview" element={<UserProfile allowUpdate={false}/>} /> */}
+          </Route>
+          <Route
+            path="contact-tpc"
+            element={<ContactTpc backgroundColor="bg-white" />}
+          />
+          <Route
+            path="placedstudents"
+            element={<PlacedStudents backgroundColor="bg-white" />}
+          />
+        </Route>
 
-      {/* TPO routes */}
-      <Route path="/tpo/dashboard" element={<TPODashboard />} />
-      <Route path="/tpo/approve-tpc" element={<TPOApproveTPC />} />
+        {/* TPO routes */}
+        <Route path="/tpo/dashboard" element={<TPODashboard />} />
+        <Route path="/tpo/approve-tpc" element={<TPOApproveTPC />} />
 
-      {/* TPF routes */}
-      <Route path="/tpf/dashboard" element={<TPFDashboard />} />
+        {/* TPF routes */}
+        <Route path="/tpf/dashboard" element={<TPFDashboard />} />
 
-      {/* Redirect root to /auth/login */}
-      <Route path="/" element={<Navigate to="/auth/login" replace />} />
-    </Routes>
+        {/* Redirect root to /auth/login */}
+        <Route path="/" element={<Navigate to="/auth/login" replace />} />
+      </Routes>
+    </>
   );
 }
 

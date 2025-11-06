@@ -1,11 +1,11 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
 
-import App from './App.jsx'
-import { BrowserRouter } from 'react-router-dom'
+import App from "./App.jsx";
+import { BrowserRouter } from "react-router-dom";
 
-const rootElement = document.getElementById('root');
+const rootElement = document.getElementById("root");
 if (rootElement) {
   createRoot(rootElement).render(
     <StrictMode>
@@ -15,5 +15,5 @@ if (rootElement) {
     </StrictMode>
   );
 } else {
-  throw new Error('Root element not found');
+  throw new Error("Root element not found");
 }

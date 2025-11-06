@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Link } from "react-router-dom"
 
-
 import { useState, useEffect } from "react"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
@@ -13,60 +12,66 @@ import { useNavigate } from "react-router-dom"
 import { API_ROUTES } from "@/lib/apiRoutes"
 
 export default function Register() {
-
-  // Example state to manage form fields
   const [form, setForm] = useState({
     email: "",
     password: "",
     cpassword: "",
     role: "",
-    deptId: ""
+    deptId: "",
+    f_name: "",
+    college_id: "",
   })
+
   const [departments, setDepartments] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const navigate = useNavigate()
 
-
-  // Fetch departments on mount
   useEffect(() => {
-    axios.get(API_ROUTES.DEPARTMENTS).then(res => setDepartments(res.data)).catch(() => setDepartments([]))
+    axios
+      .get(API_ROUTES.DEPARTMENTS)
+      .then((res) => {
+        setDepartments(res.data)
+      })
+      .catch(() => setDepartments([]))
   }, [])
 
-  // Update form fields
   const handleChange = (e: any) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  // Update role select
   const handleRoleChange = (value: any) => {
     setForm({ ...form, role: value })
   }
 
-
-
-  // Handle form submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     setSuccess("")
-    if (!form.email || !form.password || !form.cpassword || !form.role || !form.deptId) {
+
+    const { email, password, cpassword, role, deptId } = form
+
+    if (!email || !password || !cpassword || !role || !deptId) {
       setError("All fields are required.")
       return
     }
-    if (form.password !== form.cpassword) {
+    if (password !== cpassword) {
       setError("Passwords do not match.")
       return
     }
+
     setLoading(true)
     try {
       const res = await axios.post(API_ROUTES.REGISTER, {
         email: form.email,
         password: form.password,
         role: form.role,
-        deptId: form.deptId
+        deptId: form.deptId,
+        f_name: form.f_name,
+        college_id: form.college_id,
       })
+
       setSuccess(res.data.message || "Registration successful!")
       setTimeout(() => {
         navigate("/")
@@ -88,6 +93,32 @@ export default function Register() {
           {success && <div className="mb-4 text-green-600 text-center text-sm font-medium">{success}</div>}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* First Name */}
+            <div>
+              <Label htmlFor="f_name" className="mb-2 block">First Name</Label>
+              <Input
+                id="f_name"
+                name="f_name"
+                type="text"
+                placeholder="John"
+                value={form.f_name}
+                onChange={handleChange}
+              />
+            </div>
+
+            {/* College ID */}
+            <div>
+              <Label htmlFor="college_id" className="mb-2 block">College ID</Label>
+              <Input
+                id="college_id"
+                name="college_id"
+                type="text"
+                placeholder="23CP001"
+                value={form.college_id}
+                onChange={handleChange}
+              />
+            </div>
+
             {/* Email */}
             <div>
               <Label htmlFor="email" className="mb-2 block">Email</Label>
@@ -130,7 +161,6 @@ export default function Register() {
               />
             </div>
 
-
             {/* Role Dropdown */}
             <div>
               <Label htmlFor="role" className="mb-2 block">Role</Label>
@@ -154,9 +184,9 @@ export default function Register() {
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
                 <SelectContent>
-                  {departments.map((dept: any) => (
+                  {Array.isArray(departments) ? departments.map((dept: any) => (
                     <SelectItem key={dept._id} value={dept._id}>{dept.dept_name}</SelectItem>
-                  ))}
+                  )): (<>Loading...</>)}
                 </SelectContent>
               </Select>
             </div>

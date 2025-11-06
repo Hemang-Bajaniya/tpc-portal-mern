@@ -1,11 +1,26 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { XMarkIcon } from "@heroicons/react/24/solid";
+import axios from "axios";
+import { API_ROUTES, API_BASE_URL_DOC } from "@/lib/apiRoutes";
 
 // Define an interface for the error state for better type checking
 interface FormErrors {
   [key: string]: string;
+}
+
+interface Student {
+  college_id: string;
+  f_name: string;
+  m_name: string;
+  l_name: string;
+  mobile: string;
+  dob: string; // ISO date string, e.g., "2004-05-17"
+  address: string;
+  skills: string[];
+  resume: File | null;
+  created_at: string; // ISO date string, e.g., "2024-09-01"
 }
 
 const availableSkills = [
@@ -23,22 +38,56 @@ const availableSkills = [
 
 const StudentProfileView = ({ allowUpdate }: { allowUpdate: boolean }) => {
   // Dummy student data
-  const [formData, setFormData] = useState({
-    college_id: "COL001",
-    f_name: "Virendra",
-    m_name: "Kumar",
-    l_name: "Rohit",
-    mobile: "9876543210",
-    dob: "2004-05-17",
-    address: "123, Street Name, City",
-    skills: ["JavaScript", "React"],
-    resume: null as File | null, // Store the file object, not just the name
-    created_at: "2024-09-01",
+  const [formData, setFormData] = useState<Student>({
+    college_id: "",
+    f_name: "",
+    m_name: "",
+    l_name: "",
+    mobile: "",
+    dob: "",
+    address: "",
+    skills: [],
+    resume: null, // File or null
+    created_at: "",
   });
 
   // State to hold validation errors
   const [errors, setErrors] = useState<FormErrors>({});
   const [skillInput, setSkillInput] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [resumeUrl, setResumeUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await axios.get(API_ROUTES.STUDENT_PROFILE, {
+          withCredentials: true, // if using cookies for auth
+        });
+
+        const data = response.data?.data;
+
+        if (data.dob) {
+          data.dob = new Date(data.dob).toISOString().split("T")[0];
+        }
+
+        setFormData((prev) => ({
+          ...prev,
+          ...data,
+          resume: null, // Keep the file input separate
+        }));
+
+        if (data.resume) {
+          setResumeUrl(`${API_BASE_URL_DOC}/${data.resume}`);
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   // Validation logic for the form
   const validate = (): boolean => {
@@ -67,9 +116,9 @@ const StudentProfileView = ({ allowUpdate }: { allowUpdate: boolean }) => {
       newErrors.skills = "At least one skill must be added.";
     }
 
-    // Resume validation (must be uploaded)
-    if (!formData.resume) {
-        newErrors.resume = "Resume is required."
+    // Resume validation (must be uploaded if not already present)
+    if (!formData.resume && !resumeUrl) {
+      newErrors.resume = "Resume is required.";
     }
 
     setErrors(newErrors);
@@ -103,16 +152,19 @@ const StudentProfileView = ({ allowUpdate }: { allowUpdate: boolean }) => {
 
     // Check file size (e.g., max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setErrors((prev) => ({ ...prev, resume: "File size cannot exceed 5MB." }));
+      setErrors((prev) => ({
+        ...prev,
+        resume: "File size cannot exceed 5MB.",
+      }));
       return;
     }
 
     // If valid, update state and clear any existing resume error
     setFormData((prev) => ({ ...prev, resume: file }));
     setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors.resume;
-        return newErrors;
+      const newErrors = { ...prev };
+      delete newErrors.resume;
+      return newErrors;
     });
   };
 
@@ -122,7 +174,7 @@ const StudentProfileView = ({ allowUpdate }: { allowUpdate: boolean }) => {
       setFormData((prev) => ({ ...prev, skills: [...prev.skills, skill] }));
       // Clear skills error when a skill is added
       if (errors.skills) {
-        setErrors((prev) => ({...prev, skills: ""}));
+        setErrors((prev) => ({ ...prev, skills: "" }));
       }
     }
     setSkillInput("");
@@ -136,18 +188,50 @@ const StudentProfileView = ({ allowUpdate }: { allowUpdate: boolean }) => {
     }));
   };
 
-  // Handle form submission
-  const handleSaveChanges = () => {
-    if (validate()) {
-      // Create a serializable version of formData for the alert
-      const dataToDisplay = {
-        ...formData,
-        resume: formData.resume ? formData.resume.name : "No resume",
-      };
-      alert("Saved Data: " + JSON.stringify(dataToDisplay, null, 2));
+  const handleSaveChanges = async () => {
+    if (!validate()) return;
+
+    try {
+      const payload = new FormData();
+
+      payload.append("f_name", formData.f_name);
+      payload.append("m_name", formData.m_name);
+      payload.append("l_name", formData.l_name);
+      payload.append("mobile", formData.mobile);
+      payload.append("dob", formData.dob);
+      payload.append("address", formData.address);
+      payload.append("skills", formData.skills.join(","));
+
+      if (formData.resume) {
+        payload.append("resume", formData.resume);
+      }
+
+      const response = await axios.put(API_ROUTES.STUDENT_PROFILE, payload, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+      });
+
+      if (response.data.success) {
+        alert("Profile updated successfully");
+        const { data } = response.data;
+        if (data.resume) {
+          setResumeUrl(`${API_BASE_URL_DOC}/${data.resume}`);
+          setFormData((prev) => ({ ...prev, resume: null }));
+        }
+      } else {
+        alert(`Profile update failed: ${response.data.message}`);
+      }
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      let message = "Something went wrong while saving the profile.";
+      if (axios.isAxiosError(error) && error.response) {
+        message = error.response.data.message || message;
+      }
+      alert(message);
     }
   };
-
 
   // Filter skills for autocomplete
   const filteredSkills = availableSkills.filter(
@@ -210,9 +294,13 @@ const StudentProfileView = ({ allowUpdate }: { allowUpdate: boolean }) => {
                     value={formData.f_name}
                     onChange={handleChange}
                     disabled={!allowUpdate}
-                    className={`border w-full rounded-md h-10 px-3 text-gray-900 ${errors.f_name ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`border w-full rounded-md h-10 px-3 text-gray-900 ${
+                      errors.f_name ? "border-red-500" : "border-gray-300"
+                    }`}
                   />
-                  {errors.f_name && <p className="text-red-500 text-xs mt-1">{errors.f_name}</p>}
+                  {errors.f_name && (
+                    <p className="text-red-500 text-xs mt-1">{errors.f_name}</p>
+                  )}
                 </div>
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -237,9 +325,13 @@ const StudentProfileView = ({ allowUpdate }: { allowUpdate: boolean }) => {
                     value={formData.l_name}
                     onChange={handleChange}
                     disabled={!allowUpdate}
-                    className={`border w-full rounded-md h-10 px-3 text-gray-900 ${errors.l_name ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`border w-full rounded-md h-10 px-3 text-gray-900 ${
+                      errors.l_name ? "border-red-500" : "border-gray-300"
+                    }`}
                   />
-                  {errors.l_name && <p className="text-red-500 text-xs mt-1">{errors.l_name}</p>}
+                  {errors.l_name && (
+                    <p className="text-red-500 text-xs mt-1">{errors.l_name}</p>
+                  )}
                 </div>
               </div>
 
@@ -254,9 +346,13 @@ const StudentProfileView = ({ allowUpdate }: { allowUpdate: boolean }) => {
                   value={formData.mobile}
                   onChange={handleChange}
                   disabled={!allowUpdate}
-                  className={`border w-full rounded-md h-10 px-3 text-gray-900 ${errors.mobile ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`border w-full rounded-md h-10 px-3 text-gray-900 ${
+                    errors.mobile ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
-                {errors.mobile && <p className="text-red-500 text-xs mt-1">{errors.mobile}</p>}
+                {errors.mobile && (
+                  <p className="text-red-500 text-xs mt-1">{errors.mobile}</p>
+                )}
               </div>
 
               {/* DOB */}
@@ -270,9 +366,13 @@ const StudentProfileView = ({ allowUpdate }: { allowUpdate: boolean }) => {
                   value={formData.dob}
                   onChange={handleChange}
                   disabled={!allowUpdate}
-                  className={`border w-full rounded-md h-10 px-3 text-gray-900 ${errors.dob ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`border w-full rounded-md h-10 px-3 text-gray-900 ${
+                    errors.dob ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
-                {errors.dob && <p className="text-red-500 text-xs mt-1">{errors.dob}</p>}
+                {errors.dob && (
+                  <p className="text-red-500 text-xs mt-1">{errors.dob}</p>
+                )}
               </div>
 
               {/* Address */}
@@ -285,9 +385,13 @@ const StudentProfileView = ({ allowUpdate }: { allowUpdate: boolean }) => {
                   value={formData.address}
                   onChange={handleChange}
                   disabled={!allowUpdate}
-                  className={`border w-full rounded-md px-3 py-2 text-gray-900 ${errors.address ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`border w-full rounded-md px-3 py-2 text-gray-900 ${
+                    errors.address ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
-                {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
+                {errors.address && (
+                  <p className="text-red-500 text-xs mt-1">{errors.address}</p>
+                )}
               </div>
 
               {/* Skills */}
@@ -311,7 +415,11 @@ const StudentProfileView = ({ allowUpdate }: { allowUpdate: boolean }) => {
                     </div>
                   ))}
                 </div>
-                {errors.skills && <p className="text-red-500 text-xs mt-1 mb-2">{errors.skills}</p>}
+                {errors.skills && (
+                  <p className="text-red-500 text-xs mt-1 mb-2">
+                    {errors.skills}
+                  </p>
+                )}
 
                 {allowUpdate && (
                   <div className="relative">
@@ -346,36 +454,6 @@ const StudentProfileView = ({ allowUpdate }: { allowUpdate: boolean }) => {
                 )}
               </div>
 
-              {/* Resume */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Resume (PDF)
-                </label>
-                {allowUpdate ? (
-                  <>
-                    <input
-                      type="file"
-                      accept="application/pdf"
-                      onChange={handleResumeUpload}
-                      className={`border w-full rounded-md h-10 px-3 text-gray-900 ${errors.resume ? 'border-red-500' : 'border-gray-300'}`}
-                    />
-                    {formData.resume && <p className="text-gray-600 text-sm mt-1">Current file: {formData.resume.name}</p>}
-                    {errors.resume && <p className="text-red-500 text-xs mt-1">{errors.resume}</p>}
-                  </>
-                ) : formData.resume ? (
-                  <a
-                    href={URL.createObjectURL(formData.resume)}
-                    className="text-purple-600 underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {formData.resume.name}
-                  </a>
-                ) : (
-                  <p className="text-gray-500">No resume uploaded</p>
-                )}
-              </div>
-
               {/* Created At */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -383,11 +461,66 @@ const StudentProfileView = ({ allowUpdate }: { allowUpdate: boolean }) => {
                 </label>
                 <input
                   type="text"
-                  value={new Date(formData.created_at).toLocaleDateString()}
+                  value={
+                    formData.created_at
+                      ? new Date(formData.created_at).toLocaleDateString()
+                      : "N/A"
+                  }
                   disabled
                   className="border w-full rounded-md h-10 px-3 bg-gray-100 text-gray-900"
                 />
               </div>
+            </div>
+
+            {/* Resume */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Resume (PDF)
+              </label>
+
+              {allowUpdate ? (
+                <>
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handleResumeUpload}
+                    className={`border w-full rounded-md h-10 px-3 text-gray-900 ${
+                      errors.resume ? "border-red-500" : "border-gray-300"
+                    }`}
+                  />
+                  {formData.resume && (
+                    <p className="text-gray-600 text-sm mt-1">
+                      Selected file: {formData.resume.name}
+                    </p>
+                  )}
+                  {resumeUrl && !formData.resume && (
+                    <div className="mt-2">
+                      <a
+                        href={resumeUrl}
+                        className="text-purple-600 underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View uploaded resume
+                      </a>
+                    </div>
+                  )}
+                  {errors.resume && (
+                    <p className="text-red-500 text-xs mt-1">{errors.resume}</p>
+                  )}
+                </>
+              ) : resumeUrl ? (
+                <a
+                  href={resumeUrl}
+                  className="text-purple-600 underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View uploaded resume
+                </a>
+              ) : (
+                <p className="text-gray-500">No resume uploaded</p>
+              )}
             </div>
 
             {/* Save Button */}

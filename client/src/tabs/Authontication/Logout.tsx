@@ -1,34 +1,28 @@
-import { Button } from "@/components/ui/button";
-import { API_ROUTES } from "@/lib/apiRoutes";
-import { useEffect } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-export function Logout() {
+export default function Logout() {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      const response = await fetch(API_ROUTES.LOGOUT, {
-        method: "POST",
-      });
+      const res = await axios.post(
+        "http://localhost:3000/api/auth/logout",
+        {},
+        { withCredentials: true }
+      );
 
-      if (response.ok) {
-        // Redirect to the login page after successful logout
-        navigate("/auth/login");
-      } else {
-        console.error("Logout failed");
+      if (res.data.success) {
+        navigate("/login");
       }
-    } catch (error) {
-      console.error("Error during logout:", error);
+    } catch (err) {
+      console.error("Logout failed:", err);
     }
   };
 
-
-  useEffect(() => {
-    handleLogout();
-  }, [] );
-
   return (
-    <div className=""></div>
+    <button onClick={handleLogout} className="px-4 py-2 bg-red-500 text-white">
+      Logout
+    </button>
   );
 }
