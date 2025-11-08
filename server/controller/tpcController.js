@@ -364,6 +364,8 @@ export const getPendingAcademicApprovals = async (req, res) => {
 
     const results = pendingAcademics.map((item) => ({
       _id: item._id,
+      student_id: item.user_id._id || "",
+      userId: item.user_id?.userId._id || "",
       college_id: item.user_id?.college_id || "",
       name: item.user_id?.f_name || "",
       email: item.user_id?.userId?.email || "",
@@ -515,7 +517,7 @@ export const updateAcademicApprovalStatus = async (req, res) => {
       );
     }
 
-    const updatedRecord = await AcademicDetail.findOneAndUpdate(
+    const updatedRecord = await AcademicDetails.findOneAndUpdate(
       { user_id: studentId },
       { $set: { approved } },
       { new: true }

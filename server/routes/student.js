@@ -2,6 +2,7 @@ import exp from 'express';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { getStudentAcademicProfile, getStudentProfile, updateStudentProfile, getAllTpcProfiles, updateStudentAcadmicDetails, changePassword } from '../controller/studentController.js';
 import {uploadResume,uploadResults} from '../util/multer.js';
+import { addApplication, checkIfApplied, listAllApplications } from '../controller/applicationContoller.js';
 
 const router = exp.Router();
 
@@ -11,5 +12,8 @@ router.get("/academic/profile", authenticate, authorize(["Student", "TPC", "TPO"
 router.get('/profile/tpc-contact', authenticate, authorize(["Student", "TPC"]), getAllTpcProfiles);
 router.put("/academic/profile/update", authenticate, authorize([]), uploadResults.single('results'), updateStudentAcadmicDetails);
 router.put('/change-password', authenticate,authorize([]), changePassword);
+router.post('/add-application/:job_id', authenticate, authorize(["Student"]), addApplication);
+router.post('/check-application/:job_id', authenticate, authorize(["Student"]), checkIfApplied);
+router.get('/get-application', authenticate, authorize(["Student"]), listAllApplications);
 
 export default router;

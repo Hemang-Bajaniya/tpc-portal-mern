@@ -349,60 +349,73 @@ export default function AcademicDetailsForm() {
       return;
     }
 
-    try {
-      const formData = new FormData();
-      formData.append("qualificationType", form.qualificationType);
-      formData.append("ssc_percentage", form.ssc_percentage || "0");
-      formData.append(
-        "hsc_percentage",
-        form.qualificationType === "HSC" ? form.hsc_percentage || "0" : "0"
-      );
-      formData.append(
-        "diploma_cgpa",
-        form.qualificationType === "Diploma" ? form.diploma_cgpa || "0" : "0"
-      );
-      formData.append("be_cgpa", form.be_cgpa || "0");
-      formData.append("liveKT", form.liveKT || "0");
-      formData.append("deadKT", form.deadKT || "0");
+   try {
+  const formData = new FormData();
 
-      formData.append(
-        "semesters",
-        JSON.stringify(
-          form.semesters.map((sem) => ({
-            sem: sem.sem,
-            sgpa: sem.sgpa ? Number(sem.sgpa) : 0,
-          }))
-        )
-      );
+  // Calculate BE percentage automatically if semesters are filled
+  let be_percentage = 0;
+  if (form.semesters && form.semesters.length > 0) {
+    const validSgpas = form.semesters
+      .map((sem) => Number(sem.sgpa))
+      .filter((sgpa) => !isNaN(sgpa) && sgpa > 0);
 
-      if (form.results) {
-        formData.append("results", form.results);
-      }
-      console.log(form.results);
+    if (validSgpas.length > 0) {
+      const avgSgpa =
+        validSgpas.reduce((sum, sgpa) => sum + sgpa, 0) / validSgpas.length;
+      be_percentage = avgSgpa * 9.5; // Convert average SGPA to percentage
+    }
+  }
 
-      console.log(API_ROUTES.UPDATE_STUDENT_ACADMIC_DETAILS);
+  formData.append("qualificationType", form.qualificationType);
+  formData.append("ssc_percentage", form.ssc_percentage || "0");
+  formData.append(
+    "hsc_percentage",
+    form.qualificationType === "HSC" ? form.hsc_percentage || "0" : "0"
+  );
+  formData.append(
+    "diploma_cgpa",
+    form.qualificationType === "Diploma" ? form.diploma_cgpa || "0" : "0"
+  );
 
-      const res = await axios.put(
-        API_ROUTES.UPDATE_STUDENT_ACADMIC_DETAILS,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          withCredentials: true,
-        }
-      );
+  // Append computed BE percentage
+  formData.append("be_percentage", be_percentage.toFixed(2));
 
-      if (res.data.success) {
-        alert("Academic changes submitted for TPC approval!");
-        const { data } = res.data;
+  // Append semesters
+  formData.append(
+    "semesters",
+    JSON.stringify(
+      form.semesters.map((sem) => ({
+        sem: sem.sem,
+        sgpa: sem.sgpa ? Number(sem.sgpa) : 0,
+      }))
+    )
+  );
 
-        if (data.results) {
-          setResultsUrl(`${API_BASE_URL_DOC}/${data.results}`);
-          setForm((prev) => ({ ...prev, results: null }));
-        }
-      } else {
-        alert(`Profile update failed: ${res.data.message}`);
-      }
-    } catch (err) {
+  if (form.results) {
+    formData.append("results", form.results);
+  }
+
+  console.log("Computed BE Percentage:", be_percentage);
+  console.log("Results File:", form.results);
+  console.log("API Endpoint:", API_ROUTES.UPDATE_STUDENT_ACADMIC_DETAILS);
+
+  const res = await axios.put(API_ROUTES.UPDATE_STUDENT_ACADMIC_DETAILS, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    withCredentials: true,
+  });
+
+  if (res.data.success) {
+    alert("Academic changes submitted for TPC approval!");
+    const { data } = res.data;
+
+    if (data.results) {
+      setResultsUrl(`${API_BASE_URL_DOC}/${data.results}`);
+      setForm((prev) => ({ ...prev, results: null }));
+    }
+  } else {
+    alert(`Profile update failed: ${res.data.message}`);
+  }
+} catch (err) {
       console.error("Error saving academic details:", err);
       alert("Failed to submit academic changes");
     } finally {

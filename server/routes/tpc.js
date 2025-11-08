@@ -2,6 +2,7 @@ import express from 'express';
 
 import { listPendingStudents, approveOrDeclineStudent, getTpcProfile, updateTpcprofile, postPlacedStudents, getAllStudents, getPendingAcademicApprovals, getAllStudentsWithPlacementStatus, deleteStudentProfile, updateAcademicApprovalStatus } from '../controller/tpcController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
+import { getPendingApplicationsByJobId, } from '../controller/applicationContoller.js';
 
 const router = express.Router();
 
@@ -24,6 +25,8 @@ router.get('/allStudents', authenticate, authorize(["TPO", "TPC"]), getAllStuden
 
 router.delete('/students/:id', authenticate, authorize(["TPC"]), deleteStudentProfile);
 
-router.put('/acadmicdetails/update-approved', authenticate, authorize(["TPO", "TPC"]), updateAcademicApprovalStatus);
+router.put('/acadmicdetails/update-approved', authenticate, authorize(["Student","TPO", "TPC"]), updateAcademicApprovalStatus);
+
+router.get('/pending-appications/:job_id', authenticate, authorize(["TPO", "TPC"]), getPendingApplicationsByJobId)
 
 export default router;

@@ -14,6 +14,8 @@ export type Student = {
   email: string;
   approved: string;
   createdAt: string;
+  userId: string;
+  student_id: string;
 };
 
 export default function ManageAcademicDetails() {
@@ -31,6 +33,7 @@ export default function ManageAcademicDetails() {
           withCredentials: true,
         });
         setStudents(response.data.data || []);
+        console.log(response.data.data);
       } catch (err) {
         console.error(err);
         setError("Failed to fetch student data.");
@@ -121,7 +124,7 @@ export default function ManageAcademicDetails() {
       cell: ({ row }) => {
         const student = row.original;
         return (
-          <Link to={`/tpc/student-management/student-profile-update/STU001`}>
+          <Link to={`/tpc/student-management/student-profile-update/${student.userId}/${student.student_id}`}>
             <Button size="sm">View Details</Button>
           </Link>
         );

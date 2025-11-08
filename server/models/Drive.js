@@ -15,12 +15,14 @@ const roundInfoSchema = new Schema({
     enum: ['Pending', 'Ongoing', 'Completed'],
     default: 'Pending'
   },
-  student_id: [{type: Schema.Types.ObjectId, ref: 'Student'}]
+  // student_id: [{type: Schema.Types.ObjectId, ref: 'Student'}]
+  applications: [{ type: Schema.Types.ObjectId, ref: 'Application' }],
+  selected: [{ type: Schema.Types.ObjectId, ref: 'Application' }]
 }, { timestamps: true });
 
 // Main PlacementDrive schema
 const placementDriveSchema = new Schema({
-  company: {
+  company: {  
     type: Schema.Types.ObjectId,
     ref: 'Company',
     required: true

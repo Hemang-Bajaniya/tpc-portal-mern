@@ -27,6 +27,9 @@ export const API_ROUTES = {
     GET_TPC_CONTACT: `${API_BASE_URL}/student/profile/tpc-contact`,
     UPDATE_STUDENT_ACADMIC_DETAILS: `${API_BASE_URL}/student/academic/profile/update`,
     UPDATE_STUDENT_PASSWORD: `${API_BASE_URL}/student/change-password`,
+    ADD_APPLICATION: `${API_BASE_URL}/student/add-application`,
+    CHECK_APPLICATION: `${API_BASE_URL}/student/check-application`,
+    GET_APPLICATION: `${API_BASE_URL}/student/get-application`,
 
     // Companies & Jobs
     ALL_COMPANIES_DEPT: `${API_BASE_URL}/companies`,

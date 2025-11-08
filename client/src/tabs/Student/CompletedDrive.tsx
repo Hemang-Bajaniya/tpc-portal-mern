@@ -70,7 +70,7 @@ export default function CompletedDrive() {
               key={index}
               logo={company.company_logo}
               name={company.name}
-              ctc={company.ctc}
+              ctc={parseInt(company.ctc)}
               location={company.location}
               to={company.to}
               applicationDate={null}

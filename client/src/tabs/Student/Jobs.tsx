@@ -39,6 +39,8 @@ export default function Jobs() {
           withCredentials: true,
         });
         const fetchedJobs = jobsRes.data.data || [];
+        console.log(fetchedJobs);
+
 
         // Fetch user skills
         const userSkillsRes = await axios.get(API_ROUTES.USER_SKILLS, {

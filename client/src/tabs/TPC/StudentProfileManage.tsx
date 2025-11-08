@@ -398,12 +398,14 @@ const StudentProfileManage = ({ allowUpdate }: { allowUpdate: boolean }) => {
 
     try {
       setLoading(true);
-      // Assuming an API route exists for this action
+
       const response = await axios.put(
         API_ROUTES.UPDATE_ACADMIC_APPROVAL, 
         { studentId: currentStudentId, approved: status },
         { withCredentials: true }
       );
+
+      console.log(status)
 
       if (response.data.success) {
         setApproved(status);

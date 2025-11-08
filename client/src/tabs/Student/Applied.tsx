@@ -1,82 +1,83 @@
-import CompanyCard from "@/components/custom/CompanyCard";
 import { useEffect, useState } from "react";
+import axios from "axios";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { API_ROUTES } from "@/lib/apiRoutes";
+import { useNavigate } from "react-router-dom";
 
-interface AppliedCompany {
-  company_logo: string;
-  name: string;
-  last_date_for_application: string;
-  ctc: string;
-  location: string;
-  to: string;
+interface Application {
+  jobId: string;
+  status: "approved" | "rejected" | "pending" | null;
+  title: string;
+  companyName: string;
+  companyLogo: string;
 }
 
-// Updated dummy data with all required fields
-const dummyAppliedCompanies: AppliedCompany[] = [
-  {
-    company_logo: "https://placehold.co/64x64/31306d/ffffff?text=G",
-    name: "Google",
-    last_date_for_application: "2024-10-15",
-    ctc: "12",
-    location: "Bangalore, India",
-    to: "jobs/google",
-  },
-  {
-    company_logo: "https://placehold.co/64x64/000000/ffffff?text=MS",
-    name: "Microsoft",
-    last_date_for_application: "2024-10-20",
-    ctc: "14",
-    location: "Hyderabad, India",
-    to: "jobs/microsoft",
-  },
-  {
-    company_logo: "https://placehold.co/64x64/f5a623/ffffff?text=A",
-    name: "Amazon",
-    last_date_for_application: "2024-09-30",
-    ctc: "13",
-    location: "Chennai, India",
-    to: "jobs/amazon",
-  },
-];
+export default function StudentApplications() {
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export default function Applied() {
-  const [appliedCompanies, setAppliedCompanies] = useState<AppliedCompany[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setAppliedCompanies(dummyAppliedCompanies);
-      setLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
+    const fetchApplications = async () => {
+      try {
+        const res = await axios.get(API_ROUTES.GET_APPLICATION, { withCredentials: true });
+        setApplications(res.data.data || []);
+      } catch (err: any) {
+        setError(err.response?.data?.message || "Failed to fetch applications.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchApplications();
   }, []);
 
+  if (loading) return <p className="text-center mt-8 text-gray-600">Loading applications...</p>;
+  if (error) return <p className="text-center mt-8 text-red-600">{error}</p>;
+  if (applications.length === 0)
+    return <p className="text-center mt-8 text-gray-500">You have not applied to any jobs yet.</p>;
+
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Applied Companies</h1>
-
-      {loading && <p className="text-center text-gray-600">Loading...</p>}
-
-      {!loading && appliedCompanies.length === 0 && (
-        <p className="text-center text-gray-500 mt-4">
-          You have not applied to any companies yet.
-        </p>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {!loading &&
-          appliedCompanies.map((company, index) => (
-            <CompanyCard
-              key={index}
-              logo={company.company_logo}
-              name={company.name}
-              ctc={company.ctc}
-              location={company.location}
-              to={company.to}
-              applicationDate={company.last_date_for_application}
-              drive_complition_date={null}
-            />
-          ))}
+    <div className="p-4 max-w-7xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">My Applications</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {applications.map((app) => (
+          <Card
+            key={app.jobId}
+            className="cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate(`/student/dashboard/jobs/${app.jobId}`)}
+          >
+            <CardHeader className="flex items-center gap-4">
+              <img
+                src={app.companyLogo || "https://placehold.co/64x64?text=No+Logo"}
+                alt={app.companyName}
+                className="w-16 h-16 rounded-full border border-gray-300"
+              />
+              <div className="flex flex-col">
+                <CardTitle className="text-lg font-semibold">{app.companyName}</CardTitle>
+                <p className="text-sm text-muted-foreground">{app.title}</p>
+              </div>
+            </CardHeader>
+            <CardContent className="mt-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Status:</span>
+                <Badge
+                  variant={
+                    app.status === "approved"
+                      ? "secondary"
+                      : app.status === "rejected"
+                      ? "destructive"
+                      : "default"
+                  }
+                >
+                  {app.status || "Pending"}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );
