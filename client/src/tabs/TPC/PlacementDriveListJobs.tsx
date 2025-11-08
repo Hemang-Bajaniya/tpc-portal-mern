@@ -33,8 +33,7 @@ export function PlacementDriveListJobs() {
   const location = useLocation();
 
   // Detect if route is for Add or Edit company_id
-  const nestedRouteRegex =
-    /\/tpc\/job-profile-management\/(add-job-profile|view-job-profile(\/[^\/]+)?|update-job-profile|company-management)/;
+  const nestedRouteRegex = /\/tpc\/placement-drives-management\/((manage|round-manage)(\/[^\/]+)*)*/;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -87,12 +86,6 @@ export function PlacementDriveListJobs() {
     <div className="container mx-auto py-10 h-full p-10 bg-background text-foreground">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Job Profile Management</h1>
-        <Button asChild>
-          <Link to="add-job-profile">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Job Profile
-          </Link>
-        </Button>
       </div>
       <DataTable columns={jobDriveStatusColumns} data={data} />
     </div>

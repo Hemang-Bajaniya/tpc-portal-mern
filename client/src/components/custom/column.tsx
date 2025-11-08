@@ -497,7 +497,7 @@ export const jobDriveStatusColumns: ColumnDef<JobProfile>[] = [
     cell: ({ row }) => {
       const jobProfile = row.original;
       return (
-        <div className="flex items-center justify-center"><Link to={`/tpc/jobs/applications/${jobProfile._id}`} className="border p-2 rounded-md px-4 bg-black hover:bg-gray-700 text-white">Manage Drive</Link></div>
+        <div className="flex items-center justify-center"><Link to={`manage/${jobProfile._id}`} className="border p-2 rounded-md px-4 bg-black hover:bg-gray-700 text-white">Manage Drive</Link></div>
       );
     },
   },
@@ -575,7 +575,7 @@ export const activeJobProfileColumns: ColumnDef<JobProfile>[] = [
     cell: ({ row }) => {
       const jobProfile = row.original;
       return (
-        <div className="flex items-center justify-center"><Link to={`/tpc/jobs/applications/${jobProfile._id}`} className="border p-2 rounded-md px-4 bg-black hover:bg-gray-700 text-white">View</Link></div>
+        <div className="flex items-center justify-center"><Link to={`/tpc/application-management/pending-applications/${jobProfile._id}`} className="border p-2 rounded-md px-4 bg-black hover:bg-gray-700 text-white">View</Link></div>
       );
     },
   },

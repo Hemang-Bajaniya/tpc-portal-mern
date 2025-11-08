@@ -37,6 +37,9 @@ import { ApplicationManagement } from "./tabs/TPC/ApplicationManagement";
 import { Toaster } from "sonner";
 import ManageAcadmicDetails from "./tabs/TPC/ManageAcadmicDetails";
 import { PlacementDriveListJobs } from "./tabs/TPC/PlacementDriveListJobs";
+import { JobApplications } from "./tabs/TPC/JobApplications";
+import { AddPlacementDrive } from "./tabs/TPC/AddPlacementDrive";
+import { RoundInfoForm } from "./tabs/TPC/RoundInfoFrom";
 
 function App() {
   return (
@@ -86,7 +89,10 @@ function App() {
         <Route path="/tpc" element={<TPCLayout />}>
           <Route index element={<TPCApproveStudent />} />
           <Route path="approve-student" element={<TPCApproveStudent />} />
-          <Route path="approve-acadmic-details" element={<ManageAcadmicDetails />} />
+          <Route
+            path="approve-acadmic-details"
+            element={<ManageAcadmicDetails />}
+          />
           <Route
             path="profile"
             element={<TPCProfileForm allowUpdate={true} />}
@@ -125,23 +131,25 @@ function App() {
           <Route
             path="/tpc/placement-drives-management"
             element={<PlacementDriveListJobs />}
-          ></Route>
+          >
+            <Route
+              path="manage/:job_id"
+              element={<AddPlacementDrive allowUpdate={true} />}
+            />
+            <Route path="round-manage/:drive_id"
+              element={<RoundInfoForm />}
+              />
+          </Route>
           <Route
             path="/tpc/application-management"
             element={<ApplicationManagement />}
           >
-            {/* <Route path="add-application" element={<AddApplicationForm />} />
-          <Route
-            path="view-application/:id"
-            element={<ViewApplicationForm />}
-          />
-          <Route
-            path="update-application/:id"
-            element={<UpdateApplicationForm />}
-          />
-        </Route> */}
-            {/* <Route path="userview" element={<UserProfile allowUpdate={false}/>} /> */}
           </Route>
+          <Route
+              path="/tpc/application-management/pending-applications/:job_id"
+              element={<JobApplications />}
+            ></Route>
+
           <Route
             path="contact-tpc"
             element={<ContactTpc backgroundColor="bg-white" />}

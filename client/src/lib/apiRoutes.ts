@@ -19,6 +19,15 @@ export const API_ROUTES = {
     GET_ALL_STUDENTS: `${API_BASE_URL}/tpc/allStudents`,
     DELETE_STUDENT: `${API_BASE_URL}/tpc/students`,
     UPDATE_ACADMIC_APPROVAL: `${API_BASE_URL}/tpc/acadmicdetails/update-approved`,
+    GET_PENDING_APPLICATIONS: `${API_BASE_URL}/tpc/pending-applications`,
+    UPDATE_APPLICATION_STATUS: `${API_BASE_URL}/tpc/update-application-status`,
+    ADD_DRIVE: `${API_BASE_URL}/tpc/add-drive`,
+    GET_DRIVE: `${API_BASE_URL}/tpc/get-drive`,
+    GET_DRIVE_DRIVEID: `${API_BASE_URL}/tpc/get-drive-driveId`,
+    UPDATE_DRIVE: `${API_BASE_URL}/tpc/update-drive`,
+    GET_DRIVE_ROUNDS: `${API_BASE_URL}/tpc/placement-drives/rounds`,
+    UPDATE_DELETE_ROUND: `${API_BASE_URL}/tpc/placement-drives`,
+    ADD_ROUND: `${API_BASE_URL}/tpc/placement-drives`,
 
     // Student
     STUDENT_PROFILE: `${API_BASE_URL}/student/profile`,
@@ -30,6 +39,7 @@ export const API_ROUTES = {
     ADD_APPLICATION: `${API_BASE_URL}/student/add-application`,
     CHECK_APPLICATION: `${API_BASE_URL}/student/check-application`,
     GET_APPLICATION: `${API_BASE_URL}/student/get-application`,
+
 
     // Companies & Jobs
     ALL_COMPANIES_DEPT: `${API_BASE_URL}/companies`,

@@ -4,6 +4,7 @@ import StudentProfile from "../models/StudentProfile.js";
 import CompanyJobProfile from "../models/CompanyJobProfile.js";
 import { apiResponse } from "../util/apiResponse.js";
 import Company from "../models/Company.js";
+import User from "../models/User.js";
 
 
 export const addApplication = async (req, res) => {
@@ -182,7 +183,7 @@ export const listAllApplications = async (req, res) => {
   }
 };
 
-export const getPendingApplicationsByJobId = async (req, res) => {
+export const getApplicationsByJobId = async (req, res) => {
   try {
     const { job_id } = req.params;
 
@@ -196,16 +197,19 @@ export const getPendingApplicationsByJobId = async (req, res) => {
       );
     }
 
-    const applications = await Application.find({ job_profile_id: job_id, status: "pending" }).lean();
+    const applications = await Application.find({ job_profile_id: job_id }).lean();
 
     const responseData = [];
     for (const app of applications) {
       const student = await StudentProfile.findById(app.student_id).lean();
+      const user = await User.findById(student.userId).lean();
       responseData.push({
         applicationId: app._id,
         studentId: student?._id,
-        studentName: student?.name || "Unknown",
-        studentEmail: student?.email || "Unknown",
+        collegeId: student?.college_id || "Unknown",
+        studentName: student?.f_name + " " + student?.l_name || "Unknown",
+        studentEmail: user?.email || "Unknown",
+        studentResume: student?.resume || "Unknown",
         status: app.status || "Pending",
       });
     }
@@ -223,6 +227,67 @@ export const getPendingApplicationsByJobId = async (req, res) => {
       apiResponse({
         success: false,
         message: "Server error while fetching applications",
+        error: err.message,
+        status: 500,
+      })
+    );
+  }
+};
+
+/**
+ * @route PATCH /api/tpc/update-application-status
+ * @desc Update the status of a student's application
+ * @access Protected (TPO / TPC)
+ */
+export const updateApplicationStatus = async (req, res) => {
+  try {
+    const { student_id, job_profile_id, status } = req.body;
+
+    // Validation
+    if (!student_id || !job_profile_id || !status) {
+      return res.status(400).json(
+        apiResponse({
+          success: false,
+          message: "Missing required fields (student_id, job_profile_id, status)",
+          status: 400,
+        })
+      );
+    }
+
+    // Check if the application exists
+    const application = await Application.findOne({
+      student_id,
+      job_profile_id,
+    });
+
+    if (!application) {
+      return res.status(404).json(
+        apiResponse({
+          success: false,
+          message: "Application not found for the given student and job profile",
+          status: 404,
+        })
+      );
+    }
+
+    // Update status
+    application.status = status;
+    await application.save();
+
+    return res.status(200).json(
+      apiResponse({
+        success: true,
+        message: "Application status updated successfully",
+        data: application,
+        status: 200,
+      })
+    );
+  } catch (err) {
+    console.error("Error updating application status:", err);
+    return res.status(500).json(
+      apiResponse({
+        success: false,
+        message: "Server error while updating application status",
         error: err.message,
         status: 500,
       })

@@ -41,10 +41,10 @@ const placementDriveSchema = new Schema({
     type: Date,
     required: true
   },
-  last_date_to_apply: {
-    type: Date,
-    required: true
-  },
+  // last_date_to_apply: {
+  //   type: Date,
+  //   required: true
+  // },
   status: {
     type: String,
     enum: ['Upcoming', 'Ongoing', 'Completed'],
