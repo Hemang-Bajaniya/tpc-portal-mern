@@ -116,9 +116,8 @@ const availableSkills = [
 
 // --- Main Component ---
 const StudentProfileManage = ({ allowUpdate }: { allowUpdate: boolean }) => {
-  const { userId } = useParams(); // Assuming this is for admin routes
   const [searchParams] = useSearchParams();
-  const studentId = searchParams.get("studentId"); // For identifying the student
+  const {userId, studentId} = useParams() // For identifying the student
 
   // --- State Management ---
   const [formData, setFormData] = useState<CombinedFormData>({
@@ -163,8 +162,8 @@ const StudentProfileManage = ({ allowUpdate }: { allowUpdate: boolean }) => {
       setLoading(true);
       try {
         const [personalRes, academicRes] = await Promise.all([
-          axios.get(API_ROUTES.STUDENT_PROFILE ,{ withCredentials: true }),
-          axios.get(API_ROUTES.STUDENT_ACAD_PROFILE, {
+          axios.get(API_ROUTES.STUDENT_PROFILE+`/${userId}` ,{ withCredentials: true }),
+          axios.get(API_ROUTES.STUDENT_ACAD_PROFILE+`/${userId}`, {
             withCredentials: true,
           }),
         ]);
@@ -344,12 +343,12 @@ const StudentProfileManage = ({ allowUpdate }: { allowUpdate: boolean }) => {
 
       // --- API Calls ---
       const [personalUpdateRes, academicUpdateRes] = await Promise.all([
-        axios.put(API_ROUTES.STUDENT_PROFILE, personalPayload, {
+        axios.put(API_ROUTES.STUDENT_PROFILE+`/${userId}`, personalPayload, {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true,
         }),
         axios.put(
-          API_ROUTES.UPDATE_STUDENT_ACADMIC_DETAILS,
+          API_ROUTES.UPDATE_STUDENT_ACADMIC_DETAILS+`/${userId}`,
           academicPayload,
           {
             headers: { "Content-Type": "multipart/form-data" },

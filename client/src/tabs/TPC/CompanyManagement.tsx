@@ -27,7 +27,7 @@ export function CompanyManagement() {
 
   // Detect if route is for Add or Edit Company
   const addOrEditCompanyRegex =
-    /\/tpc\/company-management\/(add-company|view-company|update-company)/;
+    /\/(tpc|tpo)\/company-management\/(add-company|view-company|update-company)/;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -82,7 +82,7 @@ export function CompanyManagement() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Company Management</h1>
         <Button asChild>
-          <Link to="/tpc/company-management/add-company">
+          <Link to={'/'+window.location.pathname.split('/')[1]+"/company-management/add-company"}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Add Company
           </Link>

@@ -1,6 +1,4 @@
 import mongoose from "mongoose";
-import StudentProfile from "./StudentProfile.js";
-import Company from "./Company.js";
 import CompanyJobProfile from "./CompanyJobProfile.js";
 
 const placedStudentSchema = new mongoose.Schema({

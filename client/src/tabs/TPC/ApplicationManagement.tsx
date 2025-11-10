@@ -31,7 +31,7 @@ export function ApplicationManagement() {
 
   // Regex to detect nested routes under applications
   const nestedRouteRegex =
-    /\/tpc\/application-management\/(add-application|view-application|update-application)/;
+    /\/(tpc|tpo)\/application-management\/(add-application|view-application|update-application)/;
 
   useEffect(() => {
     const fetchData = async () => {

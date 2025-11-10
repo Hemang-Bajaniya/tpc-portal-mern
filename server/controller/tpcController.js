@@ -504,8 +504,7 @@ export const deleteStudentProfile = async (req, res) => {
 
 export const updateAcademicApprovalStatus = async (req, res) => {
   try {
-    const { studentId } = req.params;
-    const { approved } = req.body;
+    const { studentId, approved } = req.body;
 
     if (!["pending", "approved", "rejected"].includes(approved)) {
       return res.status(400).json(

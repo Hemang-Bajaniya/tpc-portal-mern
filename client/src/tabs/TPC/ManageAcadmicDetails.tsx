@@ -124,7 +124,7 @@ export default function ManageAcademicDetails() {
       cell: ({ row }) => {
         const student = row.original;
         return (
-          <Link to={`/tpc/student-management/student-profile-update/${student.userId}/${student.student_id}`}>
+          <Link to={'/'+window.location.pathname.split('/')[1]+`/student-management/student-profile-update/${student.userId}/${student.student_id}`}>
             <Button size="sm">View Details</Button>
           </Link>
         );

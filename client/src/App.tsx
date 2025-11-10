@@ -40,6 +40,9 @@ import { PlacementDriveListJobs } from "./tabs/TPC/PlacementDriveListJobs";
 import { JobApplications } from "./tabs/TPC/JobApplications";
 import { AddPlacementDrive } from "./tabs/TPC/AddPlacementDrive";
 import { RoundInfoForm } from "./tabs/TPC/RoundInfoFrom";
+import PlacementDriveDetails from "./tabs/Student/Shedule";
+import { RoundApplicationsManager } from "./tabs/TPC/RoundApplicationManager";
+import TPOLayout from "./tabs/TPO/Layout";
 
 function App() {
   return (
@@ -83,6 +86,7 @@ function App() {
           <Route path="completed-drive" element={<CompletedDrive />} />
           <Route path="jobs/:id" element={<JobDetailsPage />} />
           <Route path=":id/jobs/:id" element={<JobDetailsPage />} />
+          <Route path="drive/:driveId" element={<PlacementDriveDetails/>} />
         </Route>
 
         {/* TPC routes with sidebar layout */}
@@ -139,6 +143,9 @@ function App() {
             <Route path="round-manage/:drive_id"
               element={<RoundInfoForm />}
               />
+            <Route path="round-application-manager/:driveId/:roundId"
+              element={<RoundApplicationsManager />}
+              />
           </Route>
           <Route
             path="/tpc/application-management"
@@ -161,8 +168,82 @@ function App() {
         </Route>
 
         {/* TPO routes */}
-        <Route path="/tpo/dashboard" element={<TPODashboard />} />
-        <Route path="/tpo/approve-tpc" element={<TPOApproveTPC />} />
+        <Route path="/tpo" element={<TPOLayout/>} >
+          <Route index element={<TPOApproveTPC />} />
+          <Route path="approve-tpc" element={<TPOApproveTPC />} />
+          <Route
+            path="approve-acadmic-details"
+            element={<ManageAcadmicDetails />}
+          />
+          <Route
+            path="profile"
+            element={<TPCProfileForm allowUpdate={true} />}
+          />
+          <Route path="student-management" element={<StudentManage />}>
+            <Route
+              path="student-profile/:userId/:studentId"
+              element={<StudentProfileManage allowUpdate={false} />}
+            />
+            <Route
+              path="student-profile-update/:userId/:studentId"
+              element={<StudentProfileManage allowUpdate={true} />}
+            />
+          </Route>
+          <Route path="company-management" element={<CompanyManagement />}>
+            <Route path="add-company" element={<AddCompanyForm />} />
+            <Route
+              path="view-company/:id"
+              element={<UpdateCompanyForm allowUpdate={false} />}
+            />
+            <Route
+              path="update-company/:id"
+              element={<UpdateCompanyForm allowUpdate={true} />}
+            />
+          </Route>
+          <Route
+            path="job-profile-management"
+            element={<JobProfileManagement />}
+          >
+            <Route path="add-job-profile" element={<AddJobProfileForm />} />
+            <Route
+              path="view-job-profile/:id"
+              element={<ViewJobProfileForm allowUpdate={false} />}
+            />
+          </Route>
+          <Route
+            path="/tpo/placement-drives-management"
+            element={<PlacementDriveListJobs />}
+          >
+            <Route
+              path="manage/:job_id"
+              element={<AddPlacementDrive allowUpdate={true} />}
+            />
+            <Route path="round-manage/:drive_id"
+              element={<RoundInfoForm />}
+              />
+            <Route path="round-application-manager/:driveId/:roundId"
+              element={<RoundApplicationsManager />}
+              />
+          </Route>
+          <Route
+            path="/tpo/application-management"
+            element={<ApplicationManagement />}
+          >
+          </Route>
+          <Route
+              path="/tpo/application-management/pending-applications/:job_id"
+              element={<JobApplications />}
+            ></Route>
+
+          <Route
+            path="contact-tpc"
+            element={<ContactTpc backgroundColor="bg-white" />}
+          />
+          <Route
+            path="placedstudents"
+            element={<PlacedStudents backgroundColor="bg-white" />}
+          />
+        </Route>
 
         {/* TPF routes */}
         <Route path="/tpf/dashboard" element={<TPFDashboard />} />

@@ -21,6 +21,7 @@ import { Company } from "@/tabs/TPC/CompanyManagement";
 import { JobProfile } from "@/tabs/TPC/JobProfileManage";
 import axios from "axios";
 import { API_ROUTES } from "@/lib/apiRoutes";
+import { useState } from "react";
 
 // (Your existing column definitions like userListColumns, etc., would remain here)
 // ...
@@ -101,17 +102,17 @@ export const studentColumns: ColumnDef<Student>[] = [
     ),
   },
 
-  {
-    accessorKey: "isPlaced",
-    header: "Placement Status",
-    cell: ({ row }) => {
-      const status = row.getValue("isPlaced");
-      const isPlaced = status ? "Placed" : "Not Placed";
-      return (
-        <Badge variant={status ? "default" : "secondary"}>{isPlaced}</Badge>
-      );
-    },
-  },
+  // {
+  //   accessorKey: "isPlaced",
+  //   header: "Placement Status",
+  //   cell: ({ row }) => {
+  //     const status = row.getValue("isPlaced");
+  //     const isPlaced = status ? "Placed" : "Not Placed";
+  //     return (
+  //       <Badge variant={status ? "default" : "secondary"}>{isPlaced}</Badge>
+  //     );
+  //   },
+  // },
 
   {
     id: "actions",
@@ -358,6 +359,60 @@ export const jobProfileColumns: ColumnDef<JobProfile>[] = [
       </div>
     ),
   },
+
+  // ✅ New Status Column
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      const job = row.original;
+      const [loading, setLoading] = useState(false);
+      const [status, setStatus] = useState(job.status);
+
+      const toggleStatus = async () => {
+        const newStatus = status === "Active" ? "Inactive" : "Active";
+        setLoading(true);
+        try {
+          const res = await axios.post(
+            `${API_ROUTES.UPDATE_JOB_PROFILE_STATUS}/${job._id}`,
+            { status: newStatus },
+            { withCredentials: true }
+          );
+          if (res.data.success) {
+            setStatus(newStatus);
+            toast.success(`Status updated to ${newStatus}`);
+          } else {
+            toast.error("Failed to update status");
+          }
+        } catch (err) {
+          console.error("Status update error:", err);
+          toast.error("Error updating status");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div className="flex justify-center items-center gap-2">
+          <Badge
+            variant={status === "Active" ? null : "destructive"}
+            className="capitalize"
+          >
+            {status}
+          </Badge>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={toggleStatus}
+            disabled={loading}
+          >
+            {loading ? "Updating..." : status === "Active" ? "Deactivate" : "Activate"}
+          </Button>
+        </div>
+      );
+    },
+  },
+
   {
     id: "actions",
     header: () => <div className="text-right">Actions</div>,
@@ -384,42 +439,35 @@ export const jobProfileColumns: ColumnDef<JobProfile>[] = [
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50">
-                <DropdownMenuItem
-                  className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
-                  onClick={async (e) => {
-                    e.preventDefault();
+              <DropdownMenuItem
+                className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                onClick={async (e) => {
+                  e.preventDefault();
 
-                    const confirmed = window.confirm(
-                      "Are you sure you want to delete this job profile?"
+                  const confirmed = window.confirm(
+                    "Are you sure you want to delete this job profile?"
+                  );
+                  if (!confirmed) return;
+
+                  try {
+                    const res = await axios.delete(
+                      `${API_ROUTES.JOBS}/${jobProfile._id}`,
+                      { withCredentials: true }
                     );
-                    if (!confirmed) return;
 
-                    try {
-                      const res = await axios.delete(
-                        `${API_ROUTES.JOBS}/${jobProfile._id}`,
-                        {
-                          withCredentials: true,
-                        }
-                      );
-
-                      if (res.status === 200) {
-                        toast.success("Job profile deleted successfully!");
-                        // Optionally refresh the list or navigate away
-                        window.location.reload();
-                      } else {
-                        toast.error("Failed to delete job profile.");
-                      }
-                    } catch (err) {
-                      console.error("Delete job profile error:", err);
-                      toast.error(
-                        "Error deleting job profile. Please try again."
-                      );
+                    if (res.status === 200) {
+                      toast.success("Job profile deleted successfully!");
+                      window.location.reload();
+                    } else {
+                      toast.error("Failed to delete job profile.");
                     }
-                  }}
-                >
-                  Delete Profile
-                </DropdownMenuItem>
+                  } catch (err) {
+                    console.error("Delete job profile error:", err);
+                    toast.error("Error deleting job profile. Please try again.");
+                  }
+                }}
+              >
+                Delete Profile
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -428,6 +476,7 @@ export const jobProfileColumns: ColumnDef<JobProfile>[] = [
     },
   },
 ];
+
 
 // --- Column Definitions ---
 export const jobDriveStatusColumns: ColumnDef<JobProfile>[] = [
@@ -575,7 +624,7 @@ export const activeJobProfileColumns: ColumnDef<JobProfile>[] = [
     cell: ({ row }) => {
       const jobProfile = row.original;
       return (
-        <div className="flex items-center justify-center"><Link to={`/tpc/application-management/pending-applications/${jobProfile._id}`} className="border p-2 rounded-md px-4 bg-black hover:bg-gray-700 text-white">View</Link></div>
+        <div className="flex items-center justify-center"><Link to={`pending-applications/${jobProfile._id}`} className="border p-2 rounded-md px-4 bg-black hover:bg-gray-700 text-white">View</Link></div>
       );
     },
   },

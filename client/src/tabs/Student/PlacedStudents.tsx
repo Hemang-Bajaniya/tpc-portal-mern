@@ -1,15 +1,26 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { Student } from "@/components/custom/Student";
+import axios from "axios";
+import { API_ROUTES } from "@/lib/apiRoutes";
 
 interface PlacedStudent {
   college_id: string;
   name: string;
   dept_name: string;
-  companie: string;
+  company: string;
+  logo?: string;
+  job_title: string;
   ctc: string;
+  location: string;
 }
 
-export function PlacedStudents({backgroundColor}: {backgroundColor: string}) {
+export function PlacedStudents({
+  backgroundColor,
+}: {
+  backgroundColor: string;
+}) {
   const [students, setStudents] = useState<PlacedStudent[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,76 +28,14 @@ export function PlacedStudents({backgroundColor}: {backgroundColor: string}) {
   useEffect(() => {
     const fetchPlacedStudents = async () => {
       try {
-        // Simulate async delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Dummy data
-        const dummyData: PlacedStudent[] = [
-          {
-            college_id: "23CP001",
-            name: "Krish Patel",
-            dept_name: "Computer",
-            companie: "Roima",
-            ctc: "6.5 LPA",
-          },
-          {
-            college_id: "23CP002",
-            name: "Anaya Shah",
-            dept_name: "Computer",
-            companie: "Google",
-            ctc: "30 LPA",
-          },
-          {
-            college_id: "23CP003",
-            name: "Rohan Mehta",
-            dept_name: "Computer",
-            companie: "TCS",
-            ctc: "7 LPA",
-          },
-          {
-            college_id: "23CP004",
-            name: "Ishita Desai",
-            dept_name: "Computer",
-            companie: "Microsoft",
-            ctc: "28 LPA",
-          },
-          {
-            college_id: "23CP005",
-            name: "Aarav Joshi",
-            dept_name: "Computer",
-            companie: "Infosys",
-            ctc: "5.5 LPA",
-          },
-          {
-            college_id: "23CP006",
-            name: "Mira Thakkar",
-            dept_name: "Computer",
-            companie: "Amazon",
-            ctc: "27 LPA",
-          },
-        ];
-
-        // Set data
-        setStudents(dummyData);
-
-        // You can later replace this with actual API call
-        /*
-        const token = localStorage.getItem("token");
-        const response = await fetch("/api/placed-students", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const response = await axios.get(`${API_ROUTES.GET_PLACED_STUDENTS}`, {
+          withCredentials: true,
         });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.message || "Failed to fetch");
-        setStudents(result.data.students || []);
-        */
-      } catch (err) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("An unknown error occurred.");
-        }
+        const data = response.data;
+        setStudents(data.data || []);
+        console.log(data.data);
+      } catch (err: any) {
+        setError(err.message || "Unknown error occurred");
       } finally {
         setLoading(false);
       }
@@ -123,7 +72,9 @@ export function PlacedStudents({backgroundColor}: {backgroundColor: string}) {
                 studentId={student.college_id}
                 name={student.name}
                 department={student.dept_name}
-                companie={student.companie}
+                companie={student.company}
+                logo={student.logo}
+                jobTitle={student.job_title}
                 ctc={student.ctc}
               />
             ))}

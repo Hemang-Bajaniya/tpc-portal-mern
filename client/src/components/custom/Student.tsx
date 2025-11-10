@@ -6,15 +6,25 @@ interface Props {
   name: string;
   department: string;
   companie: string | null;
+  jobTitle?: string | null;
   ctc: string | null;
+  logo?: string | null;
 }
 
-export function Student({ studentId, name, department, companie, ctc }: Props) {
+export function Student({ studentId, name, department, companie, jobTitle, ctc, logo }: Props) {
   return (
     <Card className="w-full max-w-md mx-auto shadow-md hover:shadow-lg transition-all">
-      <CardHeader>
+      <CardHeader className="flex items-center gap-3">
+        {logo && (
+          <img
+            src={logo}
+            alt={companie || "Company Logo"}
+            className="w-10 h-10 rounded-full object-cover"
+          />
+        )}
         <CardTitle className="text-xl font-semibold">{name}</CardTitle>
       </CardHeader>
+
       <CardContent className="space-y-2">
         <div className="flex justify-between text-sm text-muted-foreground">
           <span>Student ID:</span>
@@ -22,14 +32,21 @@ export function Student({ studentId, name, department, companie, ctc }: Props) {
         </div>
 
         <div className="flex justify-between text-sm text-muted-foreground">
-          <span>Department:</span>
-          <span className="font-medium text-black">{department}</span>
+          <span>Student Name:</span>
+          <span className="font-medium text-black">{name}</span>
         </div>
 
         {companie && (
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>Company:</span>
-            <Badge variant="outline">{companie}</Badge>
+            <span className="font-medium text-black"><Badge variant={"outline"}>{companie}</Badge></span>
+          </div>
+        )}
+
+        {jobTitle && (
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <span>Job Profile:</span>
+            <span className="font-medium text-black">{jobTitle}</span>
           </div>
         )}
 

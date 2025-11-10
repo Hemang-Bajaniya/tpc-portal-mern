@@ -33,7 +33,7 @@ export function PlacementDriveListJobs() {
   const location = useLocation();
 
   // Detect if route is for Add or Edit company_id
-  const nestedRouteRegex = /\/tpc\/placement-drives-management\/((manage|round-manage)(\/[^\/]+)*)*/;
+const nestedRouteRegex = /^\/(tpc|tpo)\/placement-drives-management\/(manage|round-manage|round-application-manager)(?:\/[^\/]+)*\/?$/;
 
   useEffect(() => {
     const fetchData = async () => {

@@ -234,11 +234,6 @@ export const getApplicationsByJobId = async (req, res) => {
   }
 };
 
-/**
- * @route PATCH /api/tpc/update-application-status
- * @desc Update the status of a student's application
- * @access Protected (TPO / TPC)
- */
 export const updateApplicationStatus = async (req, res) => {
   try {
     const { student_id, job_profile_id, status } = req.body;
@@ -292,5 +287,66 @@ export const updateApplicationStatus = async (req, res) => {
         status: 500,
       })
     );
+  }
+};
+
+export const getPlacedStudents = async (req, res) => {
+  try {
+    const applications = await Application.find({ status: "Selected" }).lean();
+
+    if (!applications.length) {
+      return res.json(apiResponse(true, [], "No placed students found"));
+    }
+
+    console.log(applications)
+
+    const studentProfileIds = applications.map((app) => app.student_id);
+    const jobProfileIds = applications.map((app) => app.job_profile_id);
+
+    const [studentProfiles, jobProfiles] = await Promise.all([
+      StudentProfile.find({ _id: { $in: studentProfileIds } }).lean(),
+      CompanyJobProfile.find({ _id: { $in: jobProfileIds } }).lean(),
+    ]);
+
+    const userIds = studentProfiles.map((s) => s.userId);
+    const companyIds = jobProfiles.map((jp) => jp.company_id);
+
+    const [users, companies] = await Promise.all([
+      User.find({ _id: { $in: userIds } }).lean(),
+      Company.find({ _id: { $in: companyIds } }).lean(),
+    ]);
+
+    const studentProfileMap = Object.fromEntries(
+      studentProfiles.map((s) => [s._id.toString(), s])
+    );
+    const userMap = Object.fromEntries(users.map((u) => [u._id.toString(), u]));
+    const jobProfileMap = Object.fromEntries(jobProfiles.map((jp) => [jp._id.toString(), jp]));
+    const companyMap = Object.fromEntries(companies.map((c) => [c._id.toString(), c]));
+
+    const placedStudents = applications.map((app) => {
+      const studentProfile = studentProfileMap[app.student_id.toString()];
+      const user = studentProfile ? userMap[studentProfile.userId.toString()] : null;
+      const jobProfile = jobProfileMap[app.job_profile_id.toString()];
+      const company = jobProfile ? companyMap[jobProfile.company_id.toString()] : null;
+
+      return {
+        college_id: studentProfile?.college_id || "",
+        name: `${studentProfile?.f_name || ""} ${studentProfile?.l_name || ""}`,
+        company: company?.name || "",
+        logo: company?.logo || "",
+        job_title: jobProfile?.title || "",
+        ctc: jobProfile?.ctc ? `${jobProfile.ctc}` : "",
+        location: jobProfile?.location || "",
+      };
+    });
+
+    res.send(apiResponse({
+      data: placedStudents,
+      success: true,
+      message: "Placed students fetched successfully",
+    }));
+  } catch (err) {
+    console.error("Error fetching placed students:", err);
+    res.status(500).json(apiResponse(false, null, "Server Error"));
   }
 };

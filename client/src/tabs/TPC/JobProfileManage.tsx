@@ -21,6 +21,7 @@ export interface JobProfile {
   vacancies: number;
   ctc: number;
   bond_details: string;
+  status: string;
 }
 
 // --- Main Job Profile Listing Component ---
@@ -33,14 +34,14 @@ export function JobProfileManagement() {
 
   // Detect if route is for Add or Edit company_id
   const nestedRouteRegex =
-    /\/tpc\/job-profile-management\/(add-job-profile|view-job-profile(\/[^\/]+)?|update-job-profile|company-management)/;
+    /\/(tpc|tpo)\/job-profile-management\/(add-job-profile|view-job-profile(\/[^\/]+)?|update-job-profile|company-management)/;
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
-        const data = await axios.get(`${API_ROUTES.JOBS}`, {
+        const data = await axios.get(`${API_ROUTES.GET_JOBS_TPC}`, {
           withCredentials: true,
         });
         const jobProfiles = data.data.data as JobProfile[];

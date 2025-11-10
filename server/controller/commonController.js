@@ -62,7 +62,8 @@ export const getOfferInfo = async (req, res) => {
     if (all === "true") {
       const deptFilter = dept_id ? { for_dept: dept_id } : {};
       const jobs = await CompanyJobProfile.find({
-        for_dept: {$in:dept_id}
+        for_dept: {$in:dept_id},
+        status: "Active",
       }).populate("company_id");
 
       

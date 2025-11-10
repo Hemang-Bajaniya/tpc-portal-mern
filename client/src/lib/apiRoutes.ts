@@ -28,6 +28,7 @@ export const API_ROUTES = {
     GET_DRIVE_ROUNDS: `${API_BASE_URL}/tpc/placement-drives/rounds`,
     UPDATE_DELETE_ROUND: `${API_BASE_URL}/tpc/placement-drives`,
     ADD_ROUND: `${API_BASE_URL}/tpc/placement-drives`,
+    UPDATE_JOB_PROFILE_STATUS: `${API_BASE_URL}/tpc/update-job-profile-status`,
 
     // Student
     STUDENT_PROFILE: `${API_BASE_URL}/student/profile`,
@@ -39,6 +40,10 @@ export const API_ROUTES = {
     ADD_APPLICATION: `${API_BASE_URL}/student/add-application`,
     CHECK_APPLICATION: `${API_BASE_URL}/student/check-application`,
     GET_APPLICATION: `${API_BASE_URL}/student/get-application`,
+    GET_DRIVE_STUDENT: `${API_BASE_URL}/student/get-drive`,
+    GET_COLLEGE_ID: `${API_BASE_URL}/student/getcollegeid`,
+    GET_ONGOING_DRIVE: `${API_BASE_URL}/student/get-ongoing-drive`,
+    GET_PLACED_STUDENTS: `${API_BASE_URL}/student/get-placed-students`,
 
 
     // Companies & Jobs
@@ -47,6 +52,7 @@ export const API_ROUTES = {
     JOBS: `${API_BASE_URL}/jobs`,
     ACTIVE_JOBS: `${API_BASE_URL}/jobs/active`,
     GET_JOBS: `${API_BASE_URL}/jobs`,
+    GET_JOBS_TPC: `${API_BASE_URL}/jobs/tpc`,
 
     //Users
     DELETE_USER: `${API_BASE_URL}/users/user/delete`,

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +28,7 @@ export function RoundInfoForm({ allowUpdate = true }: { allowUpdate?: boolean })
   const [loading, setLoading] = useState(true);
   const [driveExists, setDriveExists] = useState(false);
   const [rounds, setRounds] = useState<Round[]>([]);
+  const navigate = useNavigate();
 
   // Fetch drive rounds
   useEffect(() => {
@@ -258,6 +259,15 @@ export function RoundInfoForm({ allowUpdate = true }: { allowUpdate?: boolean })
                 }
                 disabled={!allowUpdate}
               />
+            </div>
+
+            <div>
+                <Button
+                onClick={() => navigate('/'+window.location.pathname.split('/')[1]+`/placement-drives-management/round-application-manager/${drive_id}/${round._id}`)}
+                disabled={!allowUpdate}
+              >
+                Add Applicants
+              </Button>
             </div>
 
             <div>

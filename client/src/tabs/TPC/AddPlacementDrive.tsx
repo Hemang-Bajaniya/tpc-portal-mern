@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +16,11 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { CalendarIcon } from "lucide-react";
 import { API_ROUTES } from "@/lib/apiRoutes";
 
-export function AddPlacementDrive({ allowUpdate = true }: { allowUpdate?: boolean }) {
+export function AddPlacementDrive({
+  allowUpdate = true,
+}: {
+  allowUpdate?: boolean;
+}) {
   const { job_id } = useParams<{ job_id: string }>();
   const navigate = useNavigate();
 
@@ -77,11 +81,19 @@ export function AddPlacementDrive({ allowUpdate = true }: { allowUpdate?: boolea
     try {
       if (driveId) {
         // Update existing drive
-        await axios.put(`${API_ROUTES.UPDATE_DRIVE}/${driveId}`, { ...formData, job_profile: job_id }, { withCredentials: true });
+        await axios.put(
+          `${API_ROUTES.UPDATE_DRIVE}/${driveId}`,
+          { ...formData, job_profile: job_id },
+          { withCredentials: true }
+        );
         alert("Placement drive updated successfully!");
       } else {
         // Add new drive
-        const res = await axios.post(API_ROUTES.ADD_DRIVE, { ...formData, job_profile: job_id }, { withCredentials: true });
+        const res = await axios.post(
+          API_ROUTES.ADD_DRIVE,
+          { ...formData, job_profile: job_id },
+          { withCredentials: true }
+        );
         setDriveId(res.data.data._id);
         alert("Placement drive added successfully!");
       }
@@ -91,11 +103,6 @@ export function AddPlacementDrive({ allowUpdate = true }: { allowUpdate?: boolea
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleRoundsRedirect = () => {
-    if (!driveId) return;
-    navigate(`/tpc/placement-drives-management/round-manage/${driveId}`);
   };
 
   if (loading) {
@@ -117,7 +124,9 @@ export function AddPlacementDrive({ allowUpdate = true }: { allowUpdate?: boolea
       <CardContent className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
           <div className="flex-1">
-            <Label htmlFor="drive_title" className="pb-2">Drive Title</Label>
+            <Label htmlFor="drive_title" className="pb-2">
+              Drive Title
+            </Label>
             <Input
               id="drive_title"
               placeholder="Enter drive title"
@@ -128,7 +137,9 @@ export function AddPlacementDrive({ allowUpdate = true }: { allowUpdate?: boolea
           </div>
 
           <div className="flex-1">
-            <Label htmlFor="drive_date" className="pb-2">Drive Date</Label>
+            <Label htmlFor="drive_date" className="pb-2">
+              Drive Date
+            </Label>
             <div className="relative">
               <Input
                 id="drive_date"
@@ -143,7 +154,9 @@ export function AddPlacementDrive({ allowUpdate = true }: { allowUpdate?: boolea
         </div>
 
         <div>
-          <Label htmlFor="description" className="pb-2">Description</Label>
+          <Label htmlFor="description" className="pb-2">
+            Description
+          </Label>
           <Textarea
             id="description"
             placeholder="Enter drive description"
@@ -186,13 +199,13 @@ export function AddPlacementDrive({ allowUpdate = true }: { allowUpdate?: boolea
           </Button>
 
           {driveId && (
-            <Button
-              onClick={handleRoundsRedirect}
-              variant="secondary"
-              className="w-full sm:w-auto"
+            <Link
+              to={'/'+window.location.pathname.split('/')[1]+`/placement-drives-management/round-manage/${driveId}`}
             >
-              Manage Rounds
-            </Button>
+              <Button variant="secondary" className="w-full sm:w-auto">
+                Manage Rounds
+              </Button>
+            </Link>
           )}
         </div>
       </CardContent>

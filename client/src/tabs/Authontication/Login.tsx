@@ -44,7 +44,7 @@ export default function Login() {
       setTimeout(() => {
         if (data.role === "Student") navigate("/student/dashboard/profile")
         else if (data.role === "TPC") navigate("/tpc")
-        else if (data.role === "TPO") navigate("/tpo/dashboard")
+        else if (data.role === "TPO") navigate("/tpo")
         else if (data.role === "TPF") navigate("/tpf/dashboard")
         else navigate("/")
       }, 1000)

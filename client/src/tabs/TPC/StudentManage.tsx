@@ -22,9 +22,9 @@ export function StudentManage() {
 
   const location = useLocation();
   const studentProfileRegex =
-    /\/tpc\/student-management\/student-profile\/.+/;
+    /\/(tpc|tpo)\/student-management\/student-profile\/.+/;
   const studentProfileUpdateRegex =
-    /\/tpc\/student-management\/student-profile-update\/.+/;
+    /\/(tpc|tpo)\/student-management\/student-profile-update\/.+/;
 
   useEffect(() => {
     const fetchData = async () => {

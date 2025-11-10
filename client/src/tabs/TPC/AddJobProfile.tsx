@@ -15,6 +15,19 @@ import { UploadCloud, Building2, Plus } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { API_ROUTES } from "@/lib/apiRoutes";
 import axios from "axios";
+import { availableSkills } from "@/components/custom/AvailableSkills";
+
+interface Department {
+  _id: string;
+  dept_id: string;
+  dept_name: string;
+}
+
+interface Company {
+  _id: string;
+  name: string;
+  logo?: string;
+}
 
 interface JobProfileData {
   company_id: string;
@@ -37,38 +50,9 @@ interface JobProfileData {
   vacancies?: number;
   bond_details?: string;
   skills_required: string[];
-  last_date_for_application?: string; // ISO string
+  last_date_for_application?: string;
   for_dept: string[];
 }
-
-// Dummy companies for dropdown
-const dummyCompanies = [
-  { _id: "COMP001", name: "Stellar Solutions Inc." },
-  { _id: "COMP002", name: "Quantum Innovations" },
-  { _id: "COMP003", name: "Nexus Technologies" },
-];
-
-// Dummy Skill & Department Lists (normally you'd fetch these from the backend)
-const availableSkills = [
-  "JavaScript",
-  "React",
-  "Node.js",
-  "MongoDB",
-  "Python",
-  "Django",
-  "HTML",
-  "CSS",
-  "C++",
-  "Java",
-];
-
-const DepartmentList = [
-  { dept_id: "cse", dept_name: "Computer Science" },
-  { dept_id: "ece", dept_name: "Electronics" },
-  { dept_id: "me", dept_name: "Mechanical" },
-  { dept_id: "ce", dept_name: "Civil" },
-  { dept_id: "it", dept_name: "Information Technology" },
-];
 
 export default function AddJobProfileForm({ allowUpdate = true }) {
   const [formData, setFormData] = useState<JobProfileData>({
@@ -85,38 +69,40 @@ export default function AddJobProfileForm({ allowUpdate = true }) {
   });
 
   const [skillInput, setSkillInput] = useState("");
-  const [departmentInput, setDepartmentInput] = useState<string | undefined>();
+  const [departmentInput, setDepartmentInput] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const [departments, setDepartments] = useState(DepartmentList);
-  const [companies, setCompanies] = useState(dummyCompanies);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
 
   useEffect(() => {
-    // Fetch departments and companies from backend if needed
-
     const fetchData = async () => {
       try {
-        const companiesRes = await axios.get(API_ROUTES.COMPANIES, {
-          withCredentials: true,
-        });
-        const departmentsRes = await axios.get(API_ROUTES.DEPARTMENTS, {
-          withCredentials: true,
-        });
+        const [companiesRes, departmentsRes] = await Promise.all([
+          axios.get(API_ROUTES.COMPANIES, { withCredentials: true }),
+          axios.get(API_ROUTES.DEPARTMENTS, { withCredentials: true }),
+        ]);
 
-        if (companiesRes.status === 200) {
-          setCompanies(companiesRes.data.data);
-        }
-        if (departmentsRes.status === 200) {
-          setDepartments(departmentsRes.data.data);
-        }
-
-        // console.log();
+        if (companiesRes.status === 200)
+          setCompanies(companiesRes.data.data || []);
+        if (departmentsRes.status === 200)
+          setDepartments(departmentsRes.data.data || []);
       } catch (error) {
         console.error("Error fetching companies or departments:", error);
       }
     };
     fetchData();
   }, []);
+
+  const updateField = (name: keyof JobProfileData, value: any) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    updateField(name as any, value);
+  };
 
   const addSkill = (skill: string) => {
     const trimmed = skill.trim();
@@ -140,7 +126,7 @@ export default function AddJobProfileForm({ allowUpdate = true }) {
     if (dept_id && !formData.for_dept.includes(dept_id)) {
       setFormData((prev) => ({
         ...prev,
-        departments: [...prev.for_dept, dept_id],
+        for_dept: [...prev.for_dept, dept_id],
       }));
     }
     setDepartmentInput("");
@@ -149,21 +135,8 @@ export default function AddJobProfileForm({ allowUpdate = true }) {
   const removeDepartment = (dept_id: string) => {
     setFormData((prev) => ({
       ...prev,
-      departments: prev.for_dept.filter((d) => d !== dept_id),
+      for_dept: prev.for_dept.filter((d) => d !== dept_id),
     }));
-  };
-
-  const updateField = (name: keyof JobProfileData, value: any) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    const { name, value } = e.target;
-    updateField(name as any, value);
   };
 
   const addResponsibility = () => {
@@ -195,12 +168,25 @@ export default function AddJobProfileForm({ allowUpdate = true }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await axios.post(API_ROUTES.JOBS, formData, {
+      const payload = {
+        ...formData,
+        criteria: {
+          min_cgpa: formData.min_cgpa,
+          min_percentage: formData.min_percentage,
+          liveKT: formData.liveKT,
+          deadKT: formData.deadKT,
+          diploma: formData.diploma,
+          ssc: formData.ssc,
+          hsc: formData.hsc,
+          diploma_percentage: formData.diploma_percentage,
+        },
+      };
+
+      const res = await axios.post(API_ROUTES.JOBS, payload, {
         withCredentials: true,
       });
       if (res.status === 201) {
         alert("Job Profile added successfully!");
-        // Reset form or redirect as needed
         setFormData({
           company_id: "",
           title: "",
@@ -220,7 +206,6 @@ export default function AddJobProfileForm({ allowUpdate = true }) {
       console.error("Error adding job profile:", error);
       alert("An error occurred while adding the job profile.");
     }
-    alert("Check console for submitted data");
   };
 
   return (
@@ -239,7 +224,7 @@ export default function AddJobProfileForm({ allowUpdate = true }) {
         </CardHeader>
 
         <CardContent className="flex-grow overflow-y-auto p-6 space-y-6">
-          {/* 1. Company Dropdown */}
+          {/* Company Dropdown */}
           <div>
             <Label htmlFor="company_id" className="pb-2">
               Select Company
@@ -247,7 +232,7 @@ export default function AddJobProfileForm({ allowUpdate = true }) {
             <select
               id="company_id"
               name="company_id"
-              value={formData.company_id}
+              value={formData.company_id || ""}
               onChange={handleChange}
               disabled={!allowUpdate}
               className="border rounded w-full h-10 px-3"
@@ -264,25 +249,21 @@ export default function AddJobProfileForm({ allowUpdate = true }) {
           {/* Title & Location */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="title" className="pb-2">
-                Job Title
-              </Label>
+              <Label htmlFor="title">Job Title</Label>
               <Input
                 id="title"
                 name="title"
-                value={formData.title}
+                value={formData.title || ""}
                 onChange={handleChange}
                 disabled={!allowUpdate}
               />
             </div>
             <div>
-              <Label htmlFor="location" className="pb-2">
-                Location
-              </Label>
+              <Label htmlFor="location">Location</Label>
               <Input
                 id="location"
                 name="location"
-                value={formData.location}
+                value={formData.location || ""}
                 onChange={handleChange}
                 disabled={!allowUpdate}
               />
@@ -291,22 +272,20 @@ export default function AddJobProfileForm({ allowUpdate = true }) {
 
           {/* Description */}
           <div>
-            <Label htmlFor="description" className="pb-2">
-              Description
-            </Label>
+            <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
               name="description"
-              value={formData.description}
+              value={formData.description || ""}
               onChange={handleChange}
               disabled={!allowUpdate}
             />
           </div>
 
-          {/* Responsibilities with dynamic add */}
+          {/* Responsibilities */}
           <div>
-            <div className="flex w-full items-center justify-between">
-              <Label className="flex items-center">Responsibilities</Label>
+            <div className="flex justify-between items-center">
+              <Label>Responsibilities</Label>
               {allowUpdate && (
                 <Button
                   size="sm"
@@ -314,32 +293,29 @@ export default function AddJobProfileForm({ allowUpdate = true }) {
                     e.preventDefault();
                     addResponsibility();
                   }}
-                  className="flex justify-end ml-auto"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
               )}
             </div>
-
             <div className="space-y-2 mt-2">
               {formData.responsibilities.map((resp, idx) => (
                 <Input
                   key={idx}
-                  value={resp}
+                  value={resp || ""}
                   onChange={(e) =>
                     handleResponsibilityChange(idx, e.target.value)
                   }
-                  disabled={!allowUpdate}
                   placeholder={`Responsibility #${idx + 1}`}
                 />
               ))}
             </div>
           </div>
 
-          {/* Requirements dynamic */}
+          {/* Requirements */}
           <div>
-            <div className="flex w-full items-center justify-between">
-              <Label className="flex items-center">Requirements</Label>
+            <div className="flex justify-between items-center">
+              <Label>Requirements</Label>
               {allowUpdate && (
                 <Button
                   size="sm"
@@ -347,123 +323,85 @@ export default function AddJobProfileForm({ allowUpdate = true }) {
                     e.preventDefault();
                     addRequirement();
                   }}
-                  className="ml-auto"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
               )}
             </div>
-
             <div className="space-y-2 mt-2">
               {formData.requirements.map((req, idx) => (
                 <Input
                   key={idx}
-                  value={req}
+                  value={req || ""}
                   onChange={(e) => handleRequirementChange(idx, e.target.value)}
-                  disabled={!allowUpdate}
                   placeholder={`Requirement #${idx + 1}`}
                 />
               ))}
             </div>
           </div>
 
-          {/* Academic Criteria */}
+          {/* Academic Criteria Section (kept as in your schema) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="min_cgpa" className="pb-2">
-                Minimum CGPA
-              </Label>
+              <Label>Minimum CGPA</Label>
               <Input
-                id="min_cgpa"
-                name="min_cgpa"
+                type="number"
+                step="0.01"
                 value={formData.min_cgpa ?? ""}
                 onChange={handleChange}
-                type="number"
-                step="0.01"
-                min="0"
-                max="10"
+                name="min_cgpa"
               />
             </div>
-
             <div>
-              <Label htmlFor="min_percentage" className="pb-2">
-                Minimum Percentage
-              </Label>
+              <Label>Minimum Percentage</Label>
               <Input
-                id="min_percentage"
-                name="min_percentage"
+                type="number"
+                step="0.01"
                 value={formData.min_percentage ?? ""}
                 onChange={handleChange}
-                type="number"
-                step="0.01"
-                min="0"
-                max="100"
+                name="min_percentage"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="liveKT" className="pb-2">
-                Live Backlogs
-              </Label>
+              <Label>Live KT</Label>
               <Input
-                id="liveKT"
-                name="liveKT"
+                type="number"
                 value={formData.liveKT ?? ""}
                 onChange={handleChange}
-                type="number"
-                step="1"
-                min="0"
+                name="liveKT"
               />
             </div>
-
             <div>
-              <Label htmlFor="deadKT" className="pb-2">
-                Dead Backlogs
-              </Label>
+              <Label>Dead KT</Label>
               <Input
-                id="deadKT"
-                name="deadKT"
+                type="number"
                 value={formData.deadKT ?? ""}
                 onChange={handleChange}
-                type="number"
-                step="1"
-                min="0"
+                name="deadKT"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="hsc" className="pb-2">
-                HSC Percentage
-              </Label>
+              <Label>SSC %</Label>
               <Input
-                id="hsc"
-                name="hsc"
-                value={formData.hsc ?? ""}
-                onChange={handleChange}
                 type="number"
-                step="0.01"
-                min="0"
-                max="100"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="ssc" className="pb-2">
-                SSC Percentage
-              </Label>
-              <Input
-                id="ssc"
-                name="ssc"
                 value={formData.ssc ?? ""}
                 onChange={handleChange}
+                name="ssc"
+              />
+            </div>
+            <div>
+              <Label>HSC %</Label>
+              <Input
                 type="number"
-                step="0.01"
-                min="0"
-                max="100"
+                value={formData.hsc ?? ""}
+                onChange={handleChange}
+                name="hsc"
               />
             </div>
           </div>
@@ -475,136 +413,22 @@ export default function AddJobProfileForm({ allowUpdate = true }) {
                 checked={formData.diploma || false}
                 onCheckedChange={(checked) => updateField("diploma", !!checked)}
               />
-              <Label htmlFor="diploma" className="text-sm font-medium">
-                Diploma Student
-              </Label>
+              <Label htmlFor="diploma">Diploma Student</Label>
             </div>
-
             <div>
-              <Label htmlFor="diploma_percentage" className="pb-2">
-                Diploma Percentage
-              </Label>
+              <Label>Diploma Percentage</Label>
               <Input
-                id="diploma_percentage"
-                name="diploma_percentage"
+                type="number"
                 value={formData.diploma_percentage ?? ""}
                 onChange={handleChange}
-                type="number"
-                step="0.01"
-                min="0"
-                max="100"
+                name="diploma_percentage"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="min_cgpa" className="pb-2">
-                Minimum Cgpa
-              </Label>
-              <Input
-                id="min_cgpa"
-                name="min_cgpa"
-                value={formData.min_cgpa || 5.0}
-                onChange={handleChange}
-                type="number"
-              />
-            </div>
-            <div>
-              <Label htmlFor="min_per" className="pb-2">
-                Minimum Percentage
-              </Label>
-              <Input
-                id="min_per"
-                name="min_per"
-                value={formData.min_percentage || 50}
-                onChange={handleChange}
-                type="number"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="live_kt" className="pb-2">
-                Live Backlog
-              </Label>
-              <Input
-                id="live_kt"
-                name="live_kt"
-                value={formData.liveKT || 0}
-                onChange={handleChange}
-                type="number"
-              />
-            </div>
-            <div>
-              <Label htmlFor="dead_kt" className="pb-2">
-                Dead Backlog
-              </Label>
-              <Input
-                id="dead_kt"
-                name="dead_kt"
-                value={formData.deadKT || 0}
-                onChange={handleChange}
-                type="number"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="hsc_per" className="pb-2">
-                HSC Percentage
-              </Label>
-              <Input
-                id="hsc_per"
-                name="hsc_per"
-                value={formData.hsc || 5.0}
-                onChange={handleChange}
-                type="number"
-              />
-            </div>
-            <div>
-              <Label htmlFor="ssc_per" className="pb-2">
-                SSC Percentage
-              </Label>
-              <Input
-                id="ssc_per"
-                name="ssc_per"
-                value={formData.ssc || 50}
-                onChange={handleChange}
-                type="number"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Checkbox id="diploma-student" className="mr-4 size-5" />
-              <label
-                htmlFor="diploma-student"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Diploma Student
-              </label>
-            </div>
-            <div>
-              <Label htmlFor="dip_per" className="pb-2">
-                Diploma Percentage
-              </Label>
-              <Input
-                id="dip_per"
-                name="dip_per"
-                value={formData.diploma_percentage || 5.0}
-                onChange={handleChange}
-                type="number"
-              />
-            </div>
-          </div>
-
-          {/* Skills Input */}
+          {/* Skills */}
           <div>
-            <Label className="block mb-2">Skills</Label>
+            <Label>Skills</Label>
             <div className="flex flex-wrap gap-2 mb-2">
               {formData.skills_required.map((skill) => (
                 <div
@@ -633,7 +457,6 @@ export default function AddJobProfileForm({ allowUpdate = true }) {
                   }
                 }}
                 placeholder="Type and press enter to add skill"
-                className="w-full"
               />
               {skillInput && (
                 <div className="absolute z-10 bg-white border mt-1 rounded-md shadow-md w-full max-h-48 overflow-y-auto">
@@ -657,14 +480,12 @@ export default function AddJobProfileForm({ allowUpdate = true }) {
             </div>
           </div>
 
-          {/* Departments Input */}
+          {/* Departments */}
           <div className="mt-6">
-            <Label className="block mb-2">Departments</Label>
-
-            {/* Selected Departments */}
+            <Label>Departments</Label>
             <div className="flex flex-wrap gap-2 mb-2">
               {formData.for_dept.map((deptId) => {
-                const dept = departments.find((d) => d.dept_id === deptId);
+                const dept = departments.find((d) => d._id === deptId);
                 return (
                   <div
                     key={deptId}
@@ -682,7 +503,6 @@ export default function AddJobProfileForm({ allowUpdate = true }) {
               })}
             </div>
 
-            {/* Autocomplete Input */}
             <div className="relative">
               <Input
                 type="text"
@@ -693,18 +513,19 @@ export default function AddJobProfileForm({ allowUpdate = true }) {
                     e.preventDefault();
                     const match = departments.find(
                       (d) =>
-                        d.dept_name.toLowerCase() ===
-                          departmentInput?.toLowerCase() ||
-                        d.dept_id.toLowerCase() ===
-                          departmentInput?.toLowerCase()
+                        d.dept_name
+                          .toLowerCase()
+                          .includes(departmentInput.toLowerCase()) ||
+                        d.dept_id
+                          .toLowerCase()
+                          .includes(departmentInput.toLowerCase())
                     );
-                    if (match) addDepartment(match.dept_id);
+                    if (match) addDepartment(match._id);
                   }
                 }}
                 placeholder="Type and press enter to add department"
               />
 
-              {/* Suggestions */}
               {departmentInput && (
                 <div className="absolute z-10 bg-white border mt-1 rounded-md shadow-md w-full max-h-48 overflow-y-auto">
                   {departments
@@ -716,12 +537,12 @@ export default function AddJobProfileForm({ allowUpdate = true }) {
                           d.dept_id
                             .toLowerCase()
                             .includes(departmentInput.toLowerCase())) &&
-                        !formData.for_dept.includes(d.dept_id)
+                        !formData.for_dept.includes(d._id)
                     )
                     .map((d) => (
                       <div
-                        key={d.dept_id}
-                        onClick={() => addDepartment(d.dept_id)}
+                        key={d._id}
+                        onClick={() => addDepartment(d._id)}
                         className="px-4 py-2 cursor-pointer hover:bg-gray-100 text-sm"
                       >
                         {d.dept_name}
@@ -732,60 +553,44 @@ export default function AddJobProfileForm({ allowUpdate = true }) {
             </div>
           </div>
 
-          {/* Additional fields (type, vacancies, ctc, etc.) */}
+          {/* Job Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="type" className="pb-2">
-                Job Type
-              </Label>
+              <Label>Job Type</Label>
               <Input
-                id="type"
                 name="type"
-                value={formData.type}
+                value={formData.type || ""}
                 onChange={handleChange}
-                disabled={!allowUpdate}
               />
             </div>
             <div>
-              <Label htmlFor="vacancies" className="pb-2">
-                Vacancies
-              </Label>
+              <Label>Vacancies</Label>
               <Input
-                id="vacancies"
-                name="vacancies"
                 type="number"
+                name="vacancies"
                 value={formData.vacancies ?? ""}
                 onChange={handleChange}
-                disabled={!allowUpdate}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="ctc" className="pb-2">
-                CTC
-              </Label>
+              <Label>CTC (LPA)</Label>
               <Input
-                id="ctc"
-                name="ctc"
                 type="number"
+                name="ctc"
                 value={formData.ctc ?? ""}
                 onChange={handleChange}
-                disabled={!allowUpdate}
               />
             </div>
             <div>
-              <Label htmlFor="last_date_for_application" className="pb-2">
-                Last Date
-              </Label>
+              <Label>Last Date</Label>
               <Input
-                id="last_date_for_application"
-                name="last_date_for_application"
                 type="date"
-                value={formData.last_date_for_application ?? ""}
+                name="last_date_for_application"
+                value={formData.last_date_for_application || ""}
                 onChange={handleChange}
-                disabled={!allowUpdate}
               />
             </div>
           </div>

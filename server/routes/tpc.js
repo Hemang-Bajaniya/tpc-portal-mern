@@ -3,7 +3,8 @@ import express from 'express';
 import { listPendingStudents, approveOrDeclineStudent, getTpcProfile, updateTpcprofile, postPlacedStudents, getAllStudents, getPendingAcademicApprovals, getAllStudentsWithPlacementStatus, deleteStudentProfile, updateAcademicApprovalStatus } from '../controller/tpcController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { getApplicationsByJobId, updateApplicationStatus, } from '../controller/applicationContoller.js';
-import { addPlacementDrive, addRoundEmbedded, deleteRoundEmbedded, getDriveById, getPlacementDriveByJob, getRoundsByDrive, updatePlacementDrive, updateRoundEmbedded } from '../controller/placementDriveController.js';
+import { addPlacementDrive, addRoundApplications, addRoundEmbedded, deleteRoundEmbedded, getDriveById, getPlacementDriveByJob, getRoundApplications, getRoundsByDrive, updatePlacementDrive, updateRoundApplications, updateRoundEmbedded } from '../controller/placementDriveController.js';
+import { updateJobProfileStatus } from '../controller/jobController.js';
 
 const router = express.Router();
 
@@ -26,7 +27,7 @@ router.get('/allStudents', authenticate, authorize(["TPO", "TPC"]), getAllStuden
 
 router.delete('/students/:id', authenticate, authorize(["TPC"]), deleteStudentProfile);
 
-router.put('/acadmicdetails/update-approved', authenticate, authorize(["Student","TPO", "TPC"]), updateAcademicApprovalStatus);
+router.put('/acadmicdetails/update-approved',authenticate,authorize(["Student","TPO","TPC"]),updateAcademicApprovalStatus);
 
 router.get('/pending-applications/:job_id',authenticate,authorize(["TPO", "TPC"]),getApplicationsByJobId);
 
@@ -34,7 +35,7 @@ router.patch("/update-application-status",authenticate,authorize(["TPO", "TPC"])
 
 router.post("/add-drive", authenticate, authorize(["TPC", "TPO"]), addPlacementDrive);
 
-router.get("/get-drive/:jobId", authenticate, authorize(["TPC", "TPO"]), getPlacementDriveByJob);
+router.get("/get-drive/:jobId", authenticate, authorize(["Student","TPC", "TPO"]), getPlacementDriveByJob);
 
 router.get("/get-drive-driveId/:driveId", authenticate, authorize(["TPC", "TPO"]), getDriveById);
 
@@ -47,5 +48,28 @@ router.post("/placement-drives/:driveId/round", authenticate, authorize(["TPC", 
 router.put("/placement-drives/:driveId/round/:roundId", authenticate, authorize(["TPC", "TPO"]), updateRoundEmbedded);
 
 router.delete("/placement-drives/:driveId/round/:roundId", authenticate, authorize(["TPC", "TPO"]), deleteRoundEmbedded);
+
+router.post("/update-job-profile-status/:jobId", authenticate, authorize(["TPC", "TPO"]), updateJobProfileStatus);
+
+router.get(
+  "/placement-drives/:driveId/round/:roundId/applications",
+  authenticate,
+  authorize(["TPC", "TPO"]),
+  getRoundApplications
+);
+
+router.put(
+  "/placement-drives/:driveId/round/:roundId/applications",
+  authenticate,
+  authorize(["TPC", "TPO"]),
+  updateRoundApplications
+);
+
+router.patch(
+  "/placement-drives/:driveId/round/:roundId/applications",
+  authenticate,
+  authorize(["TPC", "TPO"]),
+  addRoundApplications
+);
 
 export default router;

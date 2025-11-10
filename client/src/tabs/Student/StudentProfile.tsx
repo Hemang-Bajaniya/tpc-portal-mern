@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import axios from "axios";
 import { API_ROUTES, API_BASE_URL_DOC } from "@/lib/apiRoutes";
+import { availableSkills } from "@/components/custom/AvailableSkills";
 
 // Define an interface for the error state for better type checking
 interface FormErrors {
@@ -22,19 +23,6 @@ interface Student {
   resume: File | null;
   created_at: string; // ISO date string, e.g., "2024-09-01"
 }
-
-const availableSkills = [
-  "JavaScript",
-  "React",
-  "Node.js",
-  "MongoDB",
-  "Python",
-  "Django",
-  "HTML",
-  "CSS",
-  "C++",
-  "Java",
-];
 
 const StudentProfileView = ({ allowUpdate }: { allowUpdate: boolean }) => {
   // Dummy student data

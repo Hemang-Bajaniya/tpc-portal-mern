@@ -1,15 +1,21 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Link } from "react-router-dom"
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Link } from "react-router-dom";
 
-import { useState, useEffect } from "react"
-import axios from "axios"
-import { useNavigate } from "react-router-dom"
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-import { API_ROUTES } from "@/lib/apiRoutes"
+import { API_ROUTES } from "@/lib/apiRoutes";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -20,48 +26,51 @@ export default function Register() {
     deptId: "",
     f_name: "",
     college_id: "",
-  })
+  });
 
-  const [departments, setDepartments] = useState<any[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
-  const navigate = useNavigate()
+  const [departments, setDepartments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get(API_ROUTES.DEPARTMENTS)
-      .then((res) => {
-        setDepartments(res.data)
-      })
-      .catch(() => setDepartments([]))
-  }, [])
+    const fetchDept = async () => {
+      try {
+        const res = await axios.get(API_ROUTES.DEPARTMENTS);
+        setDepartments(res.data.data); // ✅ Correct structure
+      } catch (err) {
+        setDepartments([]);
+      }
+    };
+    fetchDept();
+  }, []);
 
   const handleChange = (e: any) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleRoleChange = (value: any) => {
-    setForm({ ...form, role: value })
-  }
+    setForm({ ...form, role: value });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setSuccess("")
+    e.preventDefault();
+    setError("");
+    setSuccess("");
 
-    const { email, password, cpassword, role, deptId } = form
+    const { email, password, cpassword, role, deptId } = form;
 
     if (!email || !password || !cpassword || !role || !deptId) {
-      setError("All fields are required.")
-      return
+      setError("All fields are required.");
+      return;
     }
     if (password !== cpassword) {
-      setError("Passwords do not match.")
-      return
+      setError("Passwords do not match.");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
       const res = await axios.post(API_ROUTES.REGISTER, {
         email: form.email,
@@ -70,18 +79,18 @@ export default function Register() {
         deptId: form.deptId,
         f_name: form.f_name,
         college_id: form.college_id,
-      })
+      });
 
-      setSuccess(res.data.message || "Registration successful!")
+      setSuccess(res.data.message || "Registration successful!");
       setTimeout(() => {
-        navigate("/")
-      }, 2000)
+        navigate("/");
+      }, 2000);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Registration failed.")
+      setError(err.response?.data?.message || "Registration failed.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -89,13 +98,23 @@ export default function Register() {
         <CardContent>
           <h1 className="text-2xl font-bold mb-6 text-center">Sign Up</h1>
 
-          {error && <div className="mb-4 text-red-600 text-center text-sm font-medium">{error}</div>}
-          {success && <div className="mb-4 text-green-600 text-center text-sm font-medium">{success}</div>}
+          {error && (
+            <div className="mb-4 text-red-600 text-center text-sm font-medium">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="mb-4 text-green-600 text-center text-sm font-medium">
+              {success}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* First Name */}
             <div>
-              <Label htmlFor="f_name" className="mb-2 block">First Name</Label>
+              <Label htmlFor="f_name" className="mb-2 block">
+                First Name
+              </Label>
               <Input
                 id="f_name"
                 name="f_name"
@@ -108,7 +127,9 @@ export default function Register() {
 
             {/* College ID */}
             <div>
-              <Label htmlFor="college_id" className="mb-2 block">College ID</Label>
+              <Label htmlFor="college_id" className="mb-2 block">
+                College ID
+              </Label>
               <Input
                 id="college_id"
                 name="college_id"
@@ -121,7 +142,9 @@ export default function Register() {
 
             {/* Email */}
             <div>
-              <Label htmlFor="email" className="mb-2 block">Email</Label>
+              <Label htmlFor="email" className="mb-2 block">
+                Email
+              </Label>
               <Input
                 id="email"
                 name="email"
@@ -135,7 +158,9 @@ export default function Register() {
 
             {/* Password */}
             <div>
-              <Label htmlFor="password" className="mb-2 block">Password</Label>
+              <Label htmlFor="password" className="mb-2 block">
+                Password
+              </Label>
               <Input
                 id="password"
                 name="password"
@@ -149,7 +174,9 @@ export default function Register() {
 
             {/* Confirm Password */}
             <div>
-              <Label htmlFor="cpassword" className="mb-2 block">Confirm Password</Label>
+              <Label htmlFor="cpassword" className="mb-2 block">
+                Confirm Password
+              </Label>
               <Input
                 id="cpassword"
                 name="cpassword"
@@ -163,7 +190,9 @@ export default function Register() {
 
             {/* Role Dropdown */}
             <div>
-              <Label htmlFor="role" className="mb-2 block">Role</Label>
+              <Label htmlFor="role" className="mb-2 block">
+                Role
+              </Label>
               <Select value={form.role} onValueChange={handleRoleChange}>
                 <SelectTrigger id="role" className="w-full">
                   <SelectValue placeholder="Select role" />
@@ -178,15 +207,30 @@ export default function Register() {
 
             {/* Department Dropdown */}
             <div>
-              <Label htmlFor="deptId" className="mb-2 block">Department</Label>
-              <Select value={form.deptId} onValueChange={value => setForm({ ...form, deptId: value })}>
+              <Label htmlFor="deptId" className="mb-2 block">
+                Department
+              </Label>
+              <Select
+                value={form.deptId}
+                onValueChange={(value) => setForm({ ...form, deptId: value })}
+              >
                 <SelectTrigger id="deptId" className="w-full">
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Array.isArray(departments) ? departments.map((dept: any) => (
-                    <SelectItem key={dept._id} value={dept._id}>{dept.dept_name}</SelectItem>
-                  )): (<>Loading...</>)}
+                  {departments.length > 0 ? (
+                    departments
+                      .filter((dept) => dept && dept._id)
+                      .map((dept: any) => (
+                        <SelectItem key={dept._id} value={dept._id}>
+                          {dept.dept_name}
+                        </SelectItem>
+                      ))
+                  ) : (
+                    <SelectItem value="loading" disabled>
+                      Loading departments...
+                    </SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -201,11 +245,13 @@ export default function Register() {
           <div className="text-sm text-center mt-4">
             <p>
               Already have an account?
-              <Link to="/" className="text-blue-600 hover:underline ml-1">Sign in</Link>
+              <Link to="/" className="text-blue-600 hover:underline ml-1">
+                Sign in
+              </Link>
             </p>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
