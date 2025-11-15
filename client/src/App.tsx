@@ -43,6 +43,7 @@ import { RoundInfoForm } from "./tabs/TPC/RoundInfoFrom";
 import PlacementDriveDetails from "./tabs/Student/Shedule";
 import { RoundApplicationsManager } from "./tabs/TPC/RoundApplicationManager";
 import TPOLayout from "./tabs/TPO/Layout";
+import TPOProfileForm from "./tabs/TPO/TpoProfile";
 
 function App() {
   return (
@@ -83,10 +84,10 @@ function App() {
             path="contacttpc"
             element={<ContactTpc backgroundColor="bg-gray-50" />}
           />
-          <Route path="completed-drive" element={<CompletedDrive />} />
+          {/* <Route path="completed-drive" element={<CompletedDrive />} /> */}
           <Route path="jobs/:id" element={<JobDetailsPage />} />
           <Route path=":id/jobs/:id" element={<JobDetailsPage />} />
-          <Route path="drive/:driveId" element={<PlacementDriveDetails/>} />
+          <Route path="drive/:driveId" element={<PlacementDriveDetails />} />
         </Route>
 
         {/* TPC routes with sidebar layout */}
@@ -142,10 +143,10 @@ function App() {
             />
             <Route path="round-manage/:drive_id"
               element={<RoundInfoForm />}
-              />
+            />
             <Route path="round-application-manager/:driveId/:roundId"
               element={<RoundApplicationsManager />}
-              />
+            />
           </Route>
           <Route
             path="/tpc/application-management"
@@ -153,9 +154,9 @@ function App() {
           >
           </Route>
           <Route
-              path="/tpc/application-management/pending-applications/:job_id"
-              element={<JobApplications />}
-            ></Route>
+            path="/tpc/application-management/pending-applications/:job_id"
+            element={<JobApplications />}
+          ></Route>
 
           <Route
             path="contact-tpc"
@@ -168,7 +169,7 @@ function App() {
         </Route>
 
         {/* TPO routes */}
-        <Route path="/tpo" element={<TPOLayout/>} >
+        <Route path="/tpo" element={<TPOLayout />} >
           <Route index element={<TPOApproveTPC />} />
           <Route path="approve-tpc" element={<TPOApproveTPC />} />
           <Route
@@ -177,7 +178,7 @@ function App() {
           />
           <Route
             path="profile"
-            element={<TPCProfileForm allowUpdate={true} />}
+            element={<TPOProfileForm allowUpdate={true} />}
           />
           <Route path="student-management" element={<StudentManage />}>
             <Route
@@ -220,10 +221,10 @@ function App() {
             />
             <Route path="round-manage/:drive_id"
               element={<RoundInfoForm />}
-              />
+            />
             <Route path="round-application-manager/:driveId/:roundId"
               element={<RoundApplicationsManager />}
-              />
+            />
           </Route>
           <Route
             path="/tpo/application-management"
@@ -231,9 +232,9 @@ function App() {
           >
           </Route>
           <Route
-              path="/tpo/application-management/pending-applications/:job_id"
-              element={<JobApplications />}
-            ></Route>
+            path="/tpo/application-management/pending-applications/:job_id"
+            element={<JobApplications />}
+          ></Route>
 
           <Route
             path="contact-tpc"

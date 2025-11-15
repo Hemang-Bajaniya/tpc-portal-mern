@@ -30,11 +30,12 @@ export const API_ROUTES = {
     ADD_ROUND: `${API_BASE_URL}/tpc/placement-drives`,
     UPDATE_JOB_PROFILE_STATUS: `${API_BASE_URL}/tpc/update-job-profile-status`,
 
+
     // Student
     STUDENT_PROFILE: `${API_BASE_URL}/student/profile`,
     STUDENT_ACAD_PROFILE: `${API_BASE_URL}/student/academic/profile`,
     STUDENT_COMPANIES: `${API_BASE_URL}/student/companies`,
-    GET_TPC_CONTACT: `${API_BASE_URL}/student/profile/tpc-contact`,
+    GET_TPC_CONTACT: `${API_BASE_URL}/student/profile/tpc/contact-tpc`,
     UPDATE_STUDENT_ACADMIC_DETAILS: `${API_BASE_URL}/student/academic/profile/update`,
     UPDATE_STUDENT_PASSWORD: `${API_BASE_URL}/student/change-password`,
     ADD_APPLICATION: `${API_BASE_URL}/student/add-application`,
@@ -60,4 +61,11 @@ export const API_ROUTES = {
     // Common
     OFFER_INFO: `${API_BASE_URL}/common/offerinfo`,
     USER_SKILLS: `${API_BASE_URL}/common/studentskills`,
+    UPDATE_PASSWORD: `${API_BASE_URL}/common/password-reset`,
+
+    // TPO
+    TPO_PROFILE: `${API_BASE_URL}/tpo/profile`,
+    APPROVE_TPC: `${API_BASE_URL}/tpo/tpc/approve`,
+    PENDING_TPC: `${API_BASE_URL}/tpo/tpc/pending`,
+
 };

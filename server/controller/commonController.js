@@ -4,6 +4,8 @@ import PlacementDrive from "../models/Drive.js";
 import Company from "../models/Company.js";
 import { apiResponse } from "../util/apiResponse.js";
 import StudentProfile from "../models/StudentProfile.js";
+import User from "../models/User.js";
+import bcrypt from "bcryptjs";
 
 // reuse helper functions (or duplicate small helpers here)
 const slugify = (s = "") =>
@@ -62,11 +64,11 @@ export const getOfferInfo = async (req, res) => {
     if (all === "true") {
       const deptFilter = dept_id ? { for_dept: dept_id } : {};
       const jobs = await CompanyJobProfile.find({
-        for_dept: {$in:dept_id},
+        for_dept: { $in: dept_id },
         status: "Active",
       }).populate("company_id");
 
-      
+
 
       // Return simple job cards for listing
       const cards = jobs.map((j) => ({
@@ -122,13 +124,13 @@ export const getOfferInfo = async (req, res) => {
     // --- Split into 3 structured objects ---
     const company_detail = jobProfile.company_id
       ? {
-          name: jobProfile.company_id.name,
-          logo: jobProfile.company_id.logo,
-          company_description: jobProfile.company_id.company_description,
-          company_website: jobProfile.company_id.company_website,
-          company_location: jobProfile.company_id.company_location,
-          company_type: jobProfile.company_id.company_type,
-        }
+        name: jobProfile.company_id.name,
+        logo: jobProfile.company_id.logo,
+        company_description: jobProfile.company_id.company_description,
+        company_website: jobProfile.company_id.company_website,
+        company_location: jobProfile.company_id.company_location,
+        company_type: jobProfile.company_id.company_type,
+      }
       : {};
 
     const job_detail = {
@@ -283,5 +285,57 @@ export const getStudentSkills = async (req, res) => {
         status: 500,
       })
     );
+  }
+};
+
+export const handleResetPassword = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { oldPassword, newPassword } = req.body;
+    const user = await User.findById(userId);
+    console.log(req.body);
+
+    if (!user) {
+      return new apiResponse({
+        success: false,
+        message: "User not found",
+        status: 404,
+      });
+    }
+
+    const isMatch = bcrypt.compareSync(oldPassword, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json(
+        apiResponse({
+          success: false,
+          message: "Old password is incorrect",
+          status: 400,
+        })
+      );
+    }
+
+    user.password = bcrypt.hashSync(newPassword, 10);
+    await user.save();
+    return res.json(
+      apiResponse({
+        success: true,
+        message: "Password reset successful",
+        status: 200,
+      })
+    );
+  } catch (err) {
+    console.log(err);
+
+    res
+      .status(500)
+      .json(
+        apiResponse({
+          success: false,
+          message: "Server error",
+          error: err.message,
+          status: 500,
+        })
+      );
   }
 };

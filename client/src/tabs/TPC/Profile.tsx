@@ -1,29 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
-const departmentMap: Record<string, string> = {
-  DEP001: "Computer Engineering",
-  DEP002: "Information Technology",
-  DEP003: "Electronics",
-};
+import axios from "axios";
+import { API_ROUTES } from "@/lib/apiRoutes";
+import { toast } from "sonner";
 
 const TPCProfileForm = ({ allowUpdate }: { allowUpdate: boolean }) => {
-  const userData = {
-    userId: "USER0001",
-    name: "Virendra",
+  const emptyProfile = {
+    userId: "",
+    name: "",
     gender: "M",
     dept_id: "DEP001",
-    mobile: "9876543210",
-    email: "virendra@college.edu",
-    created_at: "2024-09-01",
+    mobile: "",
+    email: "",
+    created_at: new Date().toISOString(),
   };
 
-  const [formData, setFormData] = useState(userData);
+  const [departments, setDepartments] = useState<any[]>([]);
+  const [formData, setFormData] = useState<any>(emptyProfile);
   const [passwords, setPasswords] = useState({
     current_password: "",
     change_password: "",
   });
+  const [loading, setLoading] = useState<boolean>(true);
+  const [saving, setSaving] = useState<boolean>(false);
+  const [passwordSaving, setPasswordSaving] = useState<boolean>(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -35,6 +36,85 @@ const TPCProfileForm = ({ allowUpdate }: { allowUpdate: boolean }) => {
     setPasswords({ ...passwords, [e.target.name]: e.target.value });
   };
 
+  const handlePasswordSubmit = async () => {
+    if (!passwords.current_password) {
+      toast.error("Please enter a current password");
+      return;
+    }
+    if (!passwords.change_password) {
+      toast.error("Please enter a new password");
+      return;
+    }
+    try {
+      setPasswordSaving(true);
+      const payload = { newPassword: passwords.change_password, oldPassword: passwords.current_password };
+      const res = await axios.put(API_ROUTES.UPDATE_PASSWORD, payload, { withCredentials: true });
+      // expect controller returns success message
+      const msg = res.data?.message || "Password reset successful";
+      toast.success(msg);
+      setPasswords({ current_password: "", change_password: "" });
+    } catch (err: any) {
+      console.error("Failed to reset password:", err);
+      const message = err.response?.data?.message || err.message || "Failed to reset password";
+      toast.error(message);
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(API_ROUTES.TPC_PROFILE, { withCredentials: true });
+        console.log(res);
+
+        // backend might return profile object directly or inside `data.profile`
+        const data = res.data.data;
+        if (mounted && data) {
+          setFormData({ ...emptyProfile, ...data, email: data.userId.email || "" });
+        }
+      } catch (err) {
+        // simple error handling; can be replaced with a toast
+        console.error("Failed to fetch TPC profile:", err);
+        alert("Failed to load profile. Check console for details.");
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+
+    const fetchDepartments = async () => {
+      try {
+        const res = await axios.get(API_ROUTES.DEPARTMENTS);
+        if (mounted) setDepartments(res.data.data);
+      } catch (err) {
+        console.error("Failed to load departments");
+        if (mounted) setDepartments([]);
+      }
+    };
+
+    fetchDepartments();
+    fetchProfile();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      await axios.put(API_ROUTES.TPC_PROFILE, formData, { withCredentials: true });
+      alert("Profile updated successfully.");
+    } catch (err) {
+      console.error("Failed to update profile:", err);
+      alert("Failed to update profile. Check console for details.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="">
       {/* Profile Info */}
@@ -43,7 +123,7 @@ const TPCProfileForm = ({ allowUpdate }: { allowUpdate: boolean }) => {
           <header className="mb-10">
             <div className="flex items-center space-x-4">
               <img
-                src={`https://placehold.co/64x64/7c3aed/ffffff?text=${userData.name[0]}`}
+                src={`https://placehold.co/64x64/7c3aed/ffffff?text=${(formData?.name || "")[0] || ""}`}
                 alt="User Avatar"
                 className="w-16 h-16 rounded-full border-2 border-black-500"
               />
@@ -117,14 +197,19 @@ const TPCProfileForm = ({ allowUpdate }: { allowUpdate: boolean }) => {
                     value={formData.dept_id}
                     onChange={handleChange}
                     disabled={!allowUpdate}
-                    className="border block w-full bg-white border-gray-300 rounded-md text-gray-900 focus:ring-gray-500 focus:border-gray-500 sm:text-sm h-10 px-3"
+                    className="border block w-full bg-white border-gray-300 rounded-md text-gray-900 sm:text-sm h-10 px-3"
                   >
-                    {Object.entries(departmentMap).map(([id, name]) => (
-                      <option key={id} value={id}>
-                        {name}
-                      </option>
-                    ))}
+                    {departments.length > 0 ? (
+                      departments.map((dept) => (
+                        <option key={dept._id} value={dept._id}>
+                          {dept.dept_name}
+                        </option>
+                      ))
+                    ) : (
+                      <option disabled>Loading departments...</option>
+                    )}
                   </select>
+
                 </div>
 
                 {/* Department Name (readonly derived field) */}
@@ -138,10 +223,14 @@ const TPCProfileForm = ({ allowUpdate }: { allowUpdate: boolean }) => {
                   <input
                     id="dept_name"
                     type="text"
-                    value={departmentMap[formData.dept_id]}
+                    value={
+                      departments.find((d) => d._id === formData.dept_id)?.dept_name ||
+                      "Not Available"
+                    }
                     className="block w-full bg-gray-100 border border-gray-300 rounded-md text-gray-900 sm:text-sm h-10 px-3"
                     disabled
                   />
+
                 </div>
 
                 {/* Email */}
@@ -175,6 +264,8 @@ const TPCProfileForm = ({ allowUpdate }: { allowUpdate: boolean }) => {
                     type="text"
                     name="mobile"
                     id="mobile"
+                    minLength={10}
+                    maxLength={10}
                     className="border block w-full bg-white border-gray-300 rounded-md text-gray-900 focus:ring-gray-500 focus:border-gray-500 sm:text-sm h-10 px-3"
                     value={formData?.mobile || ""}
                     disabled={!allowUpdate}
@@ -207,9 +298,10 @@ const TPCProfileForm = ({ allowUpdate }: { allowUpdate: boolean }) => {
                     type="button"
                     variant="outline"
                     className="bg-gray-500 text-white hover:bg-black hover:text-white duration-300 cursor-pointer"
-                    onClick={() => alert("Changes Saved! (Test Only)")}
+                    onClick={handleSave}
+                    disabled={saving || loading}
                   >
-                    Save Changes
+                    {saving ? "Saving..." : "Save Changes"}
                   </Button>
                 </div>
               )}
@@ -269,13 +361,10 @@ const TPCProfileForm = ({ allowUpdate }: { allowUpdate: boolean }) => {
                 type="button"
                 variant="outline"
                 className="bg-gray-700 text-white hover:bg-black hover:text-white duration-300 cursor-pointer"
-                onClick={() =>
-                  alert(
-                    `Password change submitted: \nCurrent: ${passwords.current_password}\nNew: ${passwords.change_password}`
-                  )
-                }
+                onClick={handlePasswordSubmit}
+                disabled={passwordSaving}
               >
-                Update Password
+                {passwordSaving ? "Updating..." : "Update Password"}
               </Button>
             </div>
           </div>

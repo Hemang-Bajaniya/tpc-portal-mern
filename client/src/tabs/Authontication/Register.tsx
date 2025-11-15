@@ -113,7 +113,7 @@ export default function Register() {
             {/* First Name */}
             <div>
               <Label htmlFor="f_name" className="mb-2 block">
-                First Name
+                Name
               </Label>
               <Input
                 id="f_name"

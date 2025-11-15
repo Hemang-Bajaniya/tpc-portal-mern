@@ -1,30 +1,42 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Phone, Building2 } from "lucide-react";
 
-interface Props{
-    name: string,
-    contact: string,
-    department: string,
+interface Props {
+  name?: string;
+  contact?: string;
+  department?: string;
 }
 
-export function TPC({name, contact, department }: Props) {
+export function TPC({ name, contact, department }: Props) {
   return (
-    <Card className="w-full max-w-md mx-auto shadow-md hover:shadow-lg transition-all">
-      <CardHeader>
-        <CardTitle className="text-xl font-semibold">{name}</CardTitle>
+    <Card className="w-full shadow-sm hover:shadow-md transition-all border border-gray-200 rounded-xl">
+      <CardHeader className="pb-0">
+        <CardTitle className="text-lg font-semibold text-gray-900 truncate">
+          {name || "Unnamed Member"}
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
 
-        <div className="flex justify-between text-sm text-muted-foreground">
-          <span>Department:</span>
-          <span className="font-medium">{department}</span>
+      <hr className="w-[90%] m-auto" />
+
+      <CardContent className="text-sm">
+
+        {/* Department Row */}
+        <div className="flex items-center gap-2 text-gray-700">
+          <Building2 size={16} className="text-gray-500" />
+          <span className="font-medium truncate">
+            {department || "Department unavailable"}
+          </span>
         </div>
 
-        <div className="flex justify-between text-sm text-muted-foreground">
-          <span>Contact details:</span>
-          <span className="font-medium ">{contact}</span>
+        {/* Contact Row */}
+        <div className="flex items-center gap-2 text-gray-700">
+          <Phone size={16} className="text-gray-500" />
+          <span className="font-medium truncate">
+            {contact || "No contact number"}
+          </span>
         </div>
+
       </CardContent>
-    </Card>
+    </Card >
   );
 }

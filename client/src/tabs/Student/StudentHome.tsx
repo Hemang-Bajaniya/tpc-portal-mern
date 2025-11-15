@@ -115,12 +115,12 @@ export default function StudentHome() {
             >
               Applied
             </Link>
-            <Link
+            {/* <Link
               to="completed-drive"
               className="text-gray-700 hover:text-blue-700 px-3"
             >
               Completed Drives
-            </Link>
+            </Link> */}
             <Link
               to="placedstudents"
               className="text-gray-700 hover:text-blue-700 px-3"

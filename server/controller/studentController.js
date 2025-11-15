@@ -138,9 +138,9 @@ export const submitAcademicChanges = async (req, res) => {
       deadKT: Number(formData.deadKT) || 0,
       semesters: formData.semesters
         ? JSON.parse(formData.semesters).map((sem) => ({
-            sem: Number(sem.sem),
-            sgpa: Number(sem.sgpa) || 0,
-          }))
+          sem: Number(sem.sem),
+          sgpa: Number(sem.sgpa) || 0,
+        }))
         : Array.from({ length: 8 }, (_, i) => ({ sem: i + 1, sgpa: 0 })),
     };
 
@@ -535,7 +535,9 @@ export const updateStudentAcadmicDetailsId = async (req, res) => {
 
 export const getAllTpcProfiles = async (req, res) => {
   try {
-    const tpcs = await TpcProfile.find();
+    const tpcs = await TpcProfile.find().lean();
+
+
 
     if (tpcs.length === 0) {
       return res.status(404).json(
@@ -549,9 +551,9 @@ export const getAllTpcProfiles = async (req, res) => {
 
     const populatedTpcs = await Promise.all(
       tpcs.map(async (item) => {
-        const dept = await Department.find({dept_id: item.dept_id});
+        const dept = await Department.findById(item.dept_id);
         return {
-          ...item.toObject(),
+          ...item,
           dept_name: dept?.dept_name || null,
         };
       })

@@ -62,7 +62,7 @@ export default function TPOLayout() {
             <PopoverContent className="w-40 p-2" align="end">
               <div className="flex flex-col gap-1">
                 <Link
-                  to="/tpc/profile"
+                  to="/tpo/profile"
                   className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted text-sm"
                 >
                   <User className="h-4 w-4" />

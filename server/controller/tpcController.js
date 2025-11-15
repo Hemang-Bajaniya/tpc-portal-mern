@@ -138,7 +138,7 @@ export const getTpcProfile = async (req, res) => {
   try {
     const tpcUserId = req.user.userId;
 
-    const tpcProfile = await TpcProfile.findOne({ userId: tpcUserId });
+    const tpcProfile = await TpcProfile.findOne({ userId: tpcUserId }).populate("userId", "email");
     if (!tpcProfile) {
       return res
         .status(404)
@@ -174,7 +174,9 @@ export const getTpcProfile = async (req, res) => {
 export const updateTpcprofile = async (req, res) => {
   try {
     const tpcUserId = req.user.userId;
-    const { name, gender, mobile } = req.body;
+    const { name, gender, mobile, email, dept_id } = req.body;
+    console.log(dept_id);
+
     const tpcProfile = await TpcProfile.findOne({ userId: tpcUserId });
     if (!tpcProfile) {
       return res
@@ -187,10 +189,28 @@ export const updateTpcprofile = async (req, res) => {
           })
         );
     }
+
+    const user = await User.findById(tpcProfile.userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json(
+          apiResponse({
+            success: false,
+            message: "Associated user not found",
+            status: 404,
+          })
+        );
+    }
+
     if (name !== undefined) tpcProfile.name = name;
     if (gender !== undefined) tpcProfile.gender = gender;
     if (mobile !== undefined) tpcProfile.mobile = mobile;
+    if (email !== undefined) user.email = email;
+    if (dept_id !== undefined) { user.dept_id = dept_id; tpcProfile.dept_id = dept_id; };
+
     await tpcProfile.save();
+    await user.save();
     return res.json(
       apiResponse({
         data: tpcProfile,
@@ -301,9 +321,8 @@ export const getAllStudents = async (req, res) => {
     // Transform data to match frontend expectations
     const formattedStudents = students.map((student) => ({
       userId: student._id.toString(),
-      name: `${student.f_name} ${student.m_name || ""} ${
-        student.l_name || ""
-      }`.trim(),
+      name: `${student.f_name} ${student.m_name || ""} ${student.l_name || ""
+        }`.trim(),
       college_id: student.college_id,
       email: student.email || "N/A", // Add email if available in User model (populate if needed)
       dept_name: student.dept_id?.name || "Unknown",
@@ -403,7 +422,7 @@ export const getAllStudentsWithPlacementStatus = async (req, res) => {
         model: User,
         select: "_id email"
       })
-      .lean(); 
+      .lean();
 
     const formattedStudents = students.map((student) => {
       const fName = student.f_name || "";
@@ -552,3 +571,5 @@ export const updateAcademicApprovalStatus = async (req, res) => {
     );
   }
 };
+
+

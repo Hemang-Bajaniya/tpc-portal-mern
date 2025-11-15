@@ -1,6 +1,7 @@
 import express from 'express';
 import User from '../models/User.js';
 import { authenticate, authorize } from '../middleware/auth.js';
+import { getTpoProfile, updateTpoProfile } from '../controller/tpoController.js';
 
 const router = express.Router();
 
@@ -8,9 +9,9 @@ const router = express.Router();
 router.get('/tpc/pending', authenticate, authorize(["TPO"]), async (req, res) => {
     try {
         const pendingTPCs = await User.find({ role: 'TPC', approved: false });
-        res.json(pendingTPCs);
+        return res.json(pendingTPCs);
     } catch (err) {
-        res.status(500).json({ message: 'Server error', error: err.message });
+        return res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
 
@@ -24,10 +25,13 @@ router.post('/tpc/approve', authenticate, authorize(["TPO"]), async (req, res) =
         }
         user.approved = approve;
         await user.save();
-        res.json({ message: approve ? 'TPC approved' : 'TPC rejected' });
+        return res.json({ message: approve ? 'TPC approved' : 'TPC rejected' });
     } catch (err) {
-        res.status(500).json({ message: 'Server error', error: err.message });
+        return res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
+
+router.get('/profile', authenticate, getTpoProfile);
+router.put('/profile', authenticate, authorize(["TPO"]), updateTpoProfile);
 
 export default router;

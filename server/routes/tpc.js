@@ -27,15 +27,15 @@ router.get('/allStudents', authenticate, authorize(["TPO", "TPC"]), getAllStuden
 
 router.delete('/students/:id', authenticate, authorize(["TPC"]), deleteStudentProfile);
 
-router.put('/acadmicdetails/update-approved',authenticate,authorize(["Student","TPO","TPC"]),updateAcademicApprovalStatus);
+router.put('/acadmicdetails/update-approved', authenticate, authorize(["Student", "TPO", "TPC"]), updateAcademicApprovalStatus);
 
-router.get('/pending-applications/:job_id',authenticate,authorize(["TPO", "TPC"]),getApplicationsByJobId);
+router.get('/pending-applications/:job_id', authenticate, authorize(["TPO", "TPC"]), getApplicationsByJobId);
 
-router.patch("/update-application-status",authenticate,authorize(["TPO", "TPC"]),updateApplicationStatus);
+router.patch("/update-application-status", authenticate, authorize(["TPO", "TPC"]), updateApplicationStatus);
 
 router.post("/add-drive", authenticate, authorize(["TPC", "TPO"]), addPlacementDrive);
 
-router.get("/get-drive/:jobId", authenticate, authorize(["Student","TPC", "TPO"]), getPlacementDriveByJob);
+router.get("/get-drive/:jobId", authenticate, authorize(["Student", "TPC", "TPO"]), getPlacementDriveByJob);
 
 router.get("/get-drive-driveId/:driveId", authenticate, authorize(["TPC", "TPO"]), getDriveById);
 

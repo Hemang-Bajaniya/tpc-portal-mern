@@ -25,29 +25,67 @@ export default function Login() {
     setError("")
     setSuccess("")
     setLoading(true)
+
     try {
-      const res = await axios.post(API_ROUTES.LOGIN, form, { withCredentials: true })
+      const res = await axios.post(API_ROUTES.LOGIN, form, {
+        withCredentials: true,
+      })
+
       const { success: apiSuccess, message, data } = res.data
+
       if (!apiSuccess) {
-        setError(message || "Login failed.")
+        setError(message || "Invalid credentials.")
         setLoading(false)
         return
       }
-      if (!data?.approved) {
-        setError(message || "Awaiting approval")
+
+      // Extract approval state
+      const approved = data?.approved
+
+      // ----------------------------
+      // LOGIN APPROVAL LOGIC
+      // ----------------------------
+
+      // 1. Pending approval (approved === undefined)
+      if (approved === null) {
+        setError("Your account is pending approval.")
         setLoading(false)
         return
       }
-      setSuccess(message || "Login successful!")
+
+      // 2. Rejected (approved === false)
+      if (approved === false) {
+        setError(
+          "Your account request was rejected. Please contact TPO or TPC for clarification."
+        )
+        setLoading(false)
+        return
+      }
+
+      // 3. Approved → allow login
+      setSuccess("Login successful!")
+
       localStorage.setItem("token", data.token)
       localStorage.setItem("role", data.role)
+
       setTimeout(() => {
-        if (data.role === "Student") navigate("/student/dashboard/profile")
-        else if (data.role === "TPC") navigate("/tpc")
-        else if (data.role === "TPO") navigate("/tpo")
-        else if (data.role === "TPF") navigate("/tpf/dashboard")
-        else navigate("/")
-      }, 1000)
+        switch (data.role) {
+          case "Student":
+            navigate("/student/dashboard/profile")
+            break
+          case "TPC":
+            navigate("/tpc")
+            break
+          case "TPO":
+            navigate("/tpo")
+            break
+          case "TPF":
+            navigate("/tpf/dashboard")
+            break
+          default:
+            navigate("/")
+        }
+      }, 800)
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed.")
     } finally {
@@ -60,11 +98,24 @@ export default function Login() {
       <Card className="w-full max-w-sm p-6 shadow-lg rounded-2xl">
         <CardContent>
           <h1 className="text-2xl font-bold mb-6 text-center">Sign In</h1>
-          {error && <div className="mb-4 text-red-600 text-center text-sm font-medium">{error}</div>}
-          {success && <div className="mb-4 text-green-600 text-center text-sm font-medium">{success}</div>}
+
+          {error && (
+            <div className="mb-4 text-red-600 text-center text-sm font-medium">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-4 text-green-600 text-center text-sm font-medium">
+              {success}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="email" className="mb-2 block">Email</Label>
+              <Label htmlFor="email" className="mb-2 block">
+                Email
+              </Label>
               <Input
                 id="email"
                 name="email"
@@ -75,8 +126,11 @@ export default function Login() {
                 required
               />
             </div>
+
             <div>
-              <Label htmlFor="password" className="mb-2 block">Password</Label>
+              <Label htmlFor="password" className="mb-2 block">
+                Password
+              </Label>
               <Input
                 id="password"
                 name="password"
@@ -87,14 +141,21 @@ export default function Login() {
                 required
               />
             </div>
+
             <Button className="w-full" type="submit" disabled={loading}>
               {loading ? "Signing In..." : "Sign In"}
             </Button>
           </form>
+
           <div className="text-sm text-center mt-4">
             <p>
               Don&apos;t have an account?
-              <Link to="/auth/register" className="text-blue-600 hover:underline ml-1">Register</Link>
+              <Link
+                to="/auth/register"
+                className="text-blue-600 hover:underline ml-1"
+              >
+                Register
+              </Link>
             </p>
           </div>
         </CardContent>

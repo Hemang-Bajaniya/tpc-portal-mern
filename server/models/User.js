@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
   },
   dept_id
     : { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
-  approved: { type: Boolean, default: false },
+  approved: { type: Boolean, default: null }, // null = pending, true = approved, false = rejected
   blacklisted: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 }, { timestamps: true });

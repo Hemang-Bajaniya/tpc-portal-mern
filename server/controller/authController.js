@@ -52,9 +52,8 @@ export const login = async (req, res) => {
         .json(
           apiResponse({
             success: false,
-            message: `Awaiting approval from ${
-              user.role == "TPC" ? "TPO" : "TPC"
-            }.`,
+            message: `Awaiting approval from ${user.role == ("TPC" || "TPF") ? "TPO" : "TPC"
+              }.`,
             data: { approved: false, role: user.role },
             status: 403,
           })
